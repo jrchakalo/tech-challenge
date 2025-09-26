@@ -102,3 +102,11 @@ Esta seção detalha a primeira onda de correções, focada em resolver os erros
 * Corrigi o fluxo de hooks avançados de posts (`usePostsAdvanced`) para alinhar as mutações com o contrato real das APIs, evitar estouro de `undefined` em contadores e remover referências a permissões inexistentes no tipo `User`.
 * Atualizei o `postService` e o interceptor de `api.ts` para aceitar filtros de array/boolean e evitar acessos a headers indefinidos.
 * Reinstalei as dependências do frontend (com os plugins Tailwind utilizados) e validei com `npm run build`, que agora compila com sucesso.
+
+## 2. Configurações do Docker
+
+Esta seção detalha as correções referentes à otimização do ambiente Docker. O Dockerfile original foi refatorado para resultar em uma imagem de produção mais segura e eficiente.
+
+* Refatorei o `backend/Dockerfile` para um build multi-stage, para instalar dependências de dev antes de compilar e entrega imagem enxuta para produção.
+* Ajustei o `docker-compose.yml` para evitar volumes que sobrescrevem o build, retirei as senhas em texto plano, adicionei healthchecks, políticas de restart e corrigi a URL do frontend para `http://backend:3001/api`. Teste: `JWT_SECRET=test docker compose config` retornou a composição saudável.
+* Criei `.env` e `.env.example` na raiz do projeto para as variáveis de ambiente.
