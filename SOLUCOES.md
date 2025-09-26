@@ -108,3 +108,4 @@ Esta seção detalha a primeira onda de correções, focada em resolver os erros
 Esta seção detalha as correções referentes à otimização do ambiente Docker. O Dockerfile original foi refatorado para resultar em uma imagem de produção mais segura e eficiente.
 
 * Refatorei o `backend/Dockerfile` para um build multi-stage, para instalar dependências de dev antes de compilar e entrega imagem enxuta para produção.
+* Ajustei o `docker-compose.yml` para evitar volumes que sobrescrevem o build, retirei as senhas em texto plano, adicionei healthchecks, políticas de restart e corrigi a URL do frontend para `http://backend:3001/api`. Teste: `JWT_SECRET=test docker compose config` retornou a composição saudável.
