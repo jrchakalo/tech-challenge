@@ -1,0 +1,89 @@
+# Análise Inicial
+
+Este documento é o diagnóstico inicial do projeto para o Tech Challenge. A análise a seguir detalha os problemas encontrados na infraestrutura (Docker), no backend e no frontend, abrangendo desde falhas críticas de configuração e segurança até débitos técnicos e oportunidades de melhoria de performance e UX.
+
+Este levantamento servirá como um roteiro para as correções e implementações que serão realizadas.
+
+## 1. Diagnóstico por Componente
+
+### 1.1. Infraestrutura e Ambiente (DevOps)
+
+#### 1.1.1. Execução via Docker
+* A execução do comando `docker compose up -d` apresenta problemas. Em ambiente atual, há alto risco de falha tanto no backend quanto no frontend durante o build/execução em containers.
+* Causas identificadas (evidências no repositório):
+    * **Backend Dockerfile:** utiliza `npm ci --only=production` e em seguida `npm run build`. Como o `typescript` está em devDependencies, o build tende a falhar por falta de dependências de desenvolvimento.
+    * **Base URL do frontend no Compose:** `REACT_APP_API_URL` está definido como `http://localhost:3001` (sem o sufixo `/api`), o que causa 404 nas chamadas.
+
+#### 1.1.2. Configuração de Segurança do Docker (`docker-compose.yml`)
+*  O arquivo `docker-compose.yml` apresenta práticas de segurança inadequadas, identificadas a partir do README e confirmadas na leitura do código:
+    * **Senhas em Texto Plano:** Credenciais do banco de dados estão hardcoded no arquivo.
+    * **Ausência de Healthcheck:** O serviço do banco de dados (PostgreSQL) não possui uma verificação de saúde, o que pode levar a condições de corrida onde o backend tenta se conectar antes que o banco esteja pronto.
+    * **Ausência de Políticas de Reinicialização:** Os serviços não estão configurados para reiniciar automaticamente em caso de falha.
+    * **Configuração do Frontend:** Variável `REACT_APP_API_URL` sem `/api` e volumes de produção podem comprometer o funcionamento do app no Docker.
+
+### 1.2. Backend
+
+#### 1.2.1. Qualidade e Cobertura de Testes
+* A execução da suíte de testes (`npm test`) resulta em falhas.
+* **Falhas Identificadas em `auth.tests.ts`:**
+    * **Teste `should fail - broken test example`:** A asserção falha ao comparar o nome de usuário.
+        * **Esperado:** `"wrongusername"`
+        * **Recebido:** `"testuser"`
+    * **Teste `should fail - broken JWT test`:** A asserção espera `undefined`, mas recebe um token JWT válido.
+        * **Esperado:** `undefined`
+        * **Recebido:** (Um token JWT)
+
+#### 1.2.2. Vulnerabilidades de Segurança
+* Foram identificados pontos de segurança que exigem correção e reforço imediato:
+    * **Autenticação via JWT:** Os tokens já possuem expiração (padrão 7d), porém há uso de segredo com fallback fraco. É necessário reforçar o segredo e gerenciá-lo via variáveis.
+    * **Validação de Inputs:** Há validação com Joi em diversas rotas (auth, posts create/update, comments create). É necessário completar validações faltantes e validar parâmetros/ids de rota.
+    * **Configuração de CORS:** Revisar para origens explícitas e políticas mais restritivas conforme ambiente.
+
+#### 1.2.3. Performance
+* O arquivo `postController.ts` contém um padrão de query **N+1**, onde consultas ao banco de dados são realizadas dentro de um loop para buscar dados associados (likes, comentários). Isso degrada severamente a performance e a escalabilidade da listagem de posts.
+
+### 1.3. Frontend
+
+#### 1.3.1. Configuração do Ambiente de Testes
+* A suíte de testes (`npm test`) falhava completamente devido a erros de configuração. Para viabilizar a execução dos testes, foi necessário:
+    1.  Renomear `useAuth.ts` para `useAuth.tsx` devido à presença de código JSX;
+    2.  Realizar o downgrade da biblioteca `axios` para uma versão compatível com o ambiente Jest;
+    3.  Desenvolver um `test-utils.tsx` para encapsular os componentes em providers necessários (`ThemeProvider`, `MemoryRouter`, `AuthProvider`), que estavam ausentes no escopo dos testes;
+    4.  Mover os providers globais de `App.tsx` para `index.tsx` para isolar o componente `App` e torná-lo testável;
+    5.  Corrigir o formato de dados na propriedade `breakpoints` do tema;
+
+#### 1.3.2. Execução Manual e Compilação
+* A execução de `npm start` falha com múltiplos erros de compilação TypeScript.
+* **Causa Raiz:** A necessidade de aprimorar a tipagem do tema do `styled-components` e a divergência de `breakpoints` (tema vs uso) afetam a responsividade (CSS).
+
+#### 1.3.3. Testes Funcionais
+* Após as correções de ambiente, a suíte de testes roda, mas os dois testes falham.
+* **Falhas Identificadas em `App.test.tsx`:**
+    * **Teste `renders learn react link`:** A asserção busca pelo texto "learn react", que não existe no componente `<App />`.
+    * **Teste `should fail - broken test for evaluation`:** A asserção busca pelo texto "this text does not exist", que propositalmente não está no DOM.
+
+#### 1.3.4. Interface e Experiência do Usuário (UI/UX)
+* Foram apontadas deficiências que precisam ser verificadas e corrigidas após a aplicação estar funcional.
+    * **Responsividade:** Componentes podem não se adaptar corretamente a diferentes tamanhos de tela.
+    * **Estados de Interação:** Faltam `hover states` em elementos clicáveis.
+    * **Feedback de Formulários:** Ausência de feedback claro para o usuário em caso de erros de validação ou sucesso na submissão.
+
+## 2. Plano de Ação
+
+Com base no diagnóstico, a seguinte lista de tarefas foi criada e priorizada para guiar o desenvolvimento deste desafio.
+
+| Categoria     | Tarefa                                                | Prioridade (1-5, 5=máx) |
+| :------------ | :---------------------------------------------------- | :---------------------- |
+| **Crítico** | Corrigir erros de compilação no Frontend (tipagem do tema, plugins Tailwind referenciados no config) | 5 |
+| **Crítico** | Corrigir configuração do Docker (Dockerfile backend para build TS com devDeps, evitar volumes que sobrescrevem build/dist, corrigir REACT_APP_API_URL com `/api`, Senhas, Healthcheck) | 5 |
+| **Crítico** | Revisar política de hashing e fluxo de alteração de senha (bcrypt) | 5 |
+| **Crítico** | Fortalecer segurança do JWT (remover fallback fraco, gerenciar segredo via Secrets/ENV; expiração já configurada) | 5 |
+| **Crítico** | Corrigir asserções nos testes de Backend e Frontend      | 5                       |
+| **Performance** | Resolver query N+1 no `postController` com Eager Loading e no `getCommentsWithAuthors` | 4 |
+| **Segurança** | Completar validação de inputs (Joi) para rotas faltantes (ex.: `updateProfile`) e validar params/ids | 4 |
+| **Segurança** | Configurar CORS de forma restritiva                 | 3                       |
+| **DX/Refatoração** | Adicionar políticas de `restart` e healthchecks no Docker Compose; considerar `depends_on` com condição de saúde | 3 |
+| **DX/Refatoração** | Separar `docker-compose` de desenvolvimento e produção para evitar sobrescritas de artefatos | 3 |
+| **UI/UX** | Implementar feedback visual em formulários            | 2                       |
+| **UI/UX** | Adicionar `hover states` em elementos interativos       | 2                       |
+| **UI/UX** | Revisar e corrigir responsividade da aplicação (ajustar `breakpoints` do tema vs uso no `Container`) | 3 |

@@ -1,12 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from 'styled-components';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { theme } from './styles/theme';
 import { GlobalStyle } from './styles/GlobalStyle';
-import { AuthProvider, useAuth } from './hooks/useAuth';
+import { useAuth } from './hooks/useAuth';
 import { Layout } from './components/layout/Layout';
 import { LoginPage } from './pages/auth/LoginPage';
 // import { RegisterPage } from './pages/auth/RegisterPage';
@@ -85,26 +83,23 @@ const AppRoutes: React.FC = () => {
 };
 
 function App() {
+  // Apenas retorne a parte visual, sem os Providers
   return (
-    <ThemeProvider theme={theme}>
+    <>
       <GlobalStyle />
-      <Router>
-        <AuthProvider>
-          <AppRoutes />
-          <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-          />
-        </AuthProvider>
-      </Router>
-    </ThemeProvider>
+      <AppRoutes />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+    </>
   );
 }
 
