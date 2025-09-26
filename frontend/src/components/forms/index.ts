@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import { Box, Text } from '../ui';
 
 export const Form = styled.form`
   display: flex;
@@ -7,13 +6,16 @@ export const Form = styled.form`
   gap: ${({ theme }) => theme.space[4]};
 `;
 
-export const FormGroup = styled(Box)`
+export const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.space[2]};
 `;
 
-export const Label = styled(Text).attrs({ as: 'label', variant: 'label' })`
+export const Label = styled.label`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.gray[700]};
   cursor: pointer;
 `;
 
@@ -81,12 +83,12 @@ export const Select = styled.select<{ hasError?: boolean }>`
   }
 `;
 
-export const ErrorText = styled(Text)`
+export const ErrorText = styled.p`
   color: ${({ theme }) => theme.colors.red[500]};
   font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
-export const HelpText = styled(Text)`
+export const HelpText = styled.p`
   color: ${({ theme }) => theme.colors.gray[500]};
   font-size: ${({ theme }) => theme.fontSizes.sm};
 `;

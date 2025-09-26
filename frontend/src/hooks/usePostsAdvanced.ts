@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { postService } from '../services/postService';
 import { useAuth } from './useAuth';
-import { Post, CreatePostRequest, UpdatePostRequest } from '../types';
+import { Post, CreatePostRequest, UpdatePostRequest, PostsResponse } from '../types';
 
 // Custom hook for managing posts
 export const usePostsAdvanced = (options?: {
@@ -53,10 +53,12 @@ export const usePostsAdvanced = (options?: {
   const createPostMutation = useMutation(
     (postData: CreatePostRequest) => postService.createPost(postData),
     {
-      onSuccess: (newPost) => {
+      onSuccess: ({ post: createdPost }) => {
         // Invalidate and refetch posts
         queryClient.invalidateQueries(['posts']);
-        queryClient.setQueryData(['post', newPost.id], newPost);
+        if (createdPost) {
+          queryClient.setQueryData(['post', createdPost.id], { post: createdPost });
+        }
       },
       onError: (error) => {
         console.error('Error creating post:', error);
@@ -69,9 +71,11 @@ export const usePostsAdvanced = (options?: {
     ({ id, data }: { id: number; data: UpdatePostRequest }) =>
       postService.updatePost(id, data),
     {
-      onSuccess: (updatedPost) => {
+      onSuccess: ({ post: updatedPost }) => {
         // Update cache
-        queryClient.setQueryData(['post', updatedPost.id], updatedPost);
+        if (updatedPost) {
+          queryClient.setQueryData(['post', updatedPost.id], { post: updatedPost });
+        }
         queryClient.invalidateQueries(['posts']);
       },
       onError: (error) => {
@@ -105,28 +109,48 @@ export const usePostsAdvanced = (options?: {
         await queryClient.cancelQueries(['posts']);
 
         // Snapshot previous value
-        const previousPost = queryClient.getQueryData(['post', postId]);
-        const previousPosts = queryClient.getQueryData(queryKey);
+        const previousPost = queryClient.getQueryData<{ post: Post }>(['post', postId]);
+        const previousPosts = queryClient.getQueryData<PostsResponse>(queryKey);
 
-        // Optimistically update to new value
-        queryClient.setQueryData(['post', postId], (old: any) => ({
-          ...old,
-          isLiked: !old?.isLiked,
-          likeCount: old?.isLiked ? old.likeCount - 1 : old.likeCount + 1,
-        }));
+        if (previousPost?.post) {
+          const wasLiked = !!previousPost.post.isLiked;
+          const currentLikeCount = previousPost.post.likeCount ?? 0;
+          const optimisticPost: { post: Post } = {
+            post: {
+              ...previousPost.post,
+              isLiked: !wasLiked,
+              likeCount: wasLiked
+                ? Math.max(0, currentLikeCount - 1)
+                : currentLikeCount + 1,
+            },
+          };
 
-        queryClient.setQueryData(queryKey, (old: any) => ({
-          ...old,
-          posts: old?.posts?.map((post: Post) => 
-            post.id === postId 
-              ? {
-                  ...post,
-                  isLiked: !post.isLiked,
-                  likeCount: post.isLiked ? post.likeCount - 1 : post.likeCount + 1,
-                }
-              : post
-          ),
-        }));
+          queryClient.setQueryData(['post', postId], optimisticPost);
+        }
+
+        if (previousPosts?.posts) {
+          const optimisticPosts: PostsResponse = {
+            ...previousPosts,
+            posts: previousPosts.posts.map((postItem) => {
+              if (postItem.id !== postId) {
+                return postItem;
+              }
+
+              const wasLiked = !!postItem.isLiked;
+              const currentLikeCount = postItem.likeCount ?? 0;
+
+              return {
+                ...postItem,
+                isLiked: !wasLiked,
+                likeCount: wasLiked
+                  ? Math.max(0, currentLikeCount - 1)
+                  : currentLikeCount + 1,
+              };
+            }),
+          };
+
+          queryClient.setQueryData(queryKey, optimisticPosts);
+        }
 
         return { previousPost, previousPosts };
       },
@@ -169,12 +193,12 @@ export const usePostsAdvanced = (options?: {
     return likePostMutation.mutateAsync(postId);
   }, [likePostMutation, user]);
 
-  const canEditPost = useCallback((post: Post) => {
-    return user && (user.id === post.authorId || user.role === 'admin');
+  const canEditPost = useCallback((postItem: Post) => {
+    return !!user && user.id === postItem.authorId;
   }, [user]);
 
-  const canDeletePost = useCallback((post: Post) => {
-    return user && (user.id === post.authorId || user.role === 'admin');
+  const canDeletePost = useCallback((postItem: Post) => {
+    return !!user && user.id === postItem.authorId;
   }, [user]);
 
   return {
@@ -221,7 +245,7 @@ export const usePost = (postId: number, enabled = true) => {
   const queryClient = useQueryClient();
 
   const {
-    data: post,
+    data: postData,
     isLoading,
     error,
     refetch
@@ -237,19 +261,20 @@ export const usePost = (postId: number, enabled = true) => {
 
   // Prefetch related posts
   useEffect(() => {
-    if (post?.tags && post.tags.length > 0) {
+    const tags = postData?.post?.tags ?? [];
+    if (tags.length > 0) {
       queryClient.prefetchQuery(
-        ['posts', { tags: post.tags.slice(0, 3) }],
-        () => postService.getPosts({ tags: post.tags.slice(0, 3), limit: 5 }),
+        ['posts', { tags: tags.slice(0, 3) }],
+        () => postService.getPosts({ tags: tags.slice(0, 3), limit: 5 }),
         {
           staleTime: 10 * 60 * 1000, // 10 minutes
         }
       );
     }
-  }, [post?.tags, queryClient]);
+  }, [postData?.post?.tags, queryClient]);
 
   return {
-    post,
+    post: postData?.post,
     isLoading,
     error,
     refetch,
@@ -314,7 +339,7 @@ export const usePostSearch = () => {
   });
 
   const addTag = useCallback((tag: string) => {
-    setSelectedTags(prev => [...new Set([...prev, tag])]);
+    setSelectedTags(prev => (prev.includes(tag) ? prev : [...prev, tag]));
   }, []);
 
   const removeTag = useCallback((tag: string) => {
