@@ -74,12 +74,12 @@ Com base no diagnóstico, a seguinte lista de tarefas foi criada e priorizada pa
 
 | Categoria     | Tarefa                                                | Prioridade (1-5, 5=máx) |
 | :------------ | :---------------------------------------------------- | :---------------------- |
-| **Crítico** | Corrigir erros de compilação no Frontend (tipagem do tema, plugins Tailwind referenciados no config) | 5 |
+| **Crítico** | Corrigir erros de compilação no Frontend (tipagem do tema, configuração dos providers globais, QueryClientProvider, plugins Tailwind referenciados no config) | 5 |
 | **Crítico** | Corrigir configuração do Docker (Dockerfile backend para build TS com devDeps, evitar volumes que sobrescrevem build/dist, corrigir REACT_APP_API_URL com `/api`, Senhas, Healthcheck) | 5 |
 | **Crítico** | Revisar política de hashing e fluxo de alteração de senha (bcrypt) | 5 |
 | **Crítico** | Fortalecer segurança do JWT (remover fallback fraco, gerenciar segredo via Secrets/ENV; expiração já configurada) | 5 |
 | **Crítico** | Corrigir asserções nos testes de Backend e Frontend      | 5                       |
-| **Performance** | Resolver query N+1 no `postController` com Eager Loading e no `getCommentsWithAuthors` | 4 |
+| **Performance** | Resolver query N+1 no `postController` com Eager Loading e no `getCommentsWithAuthors` (referência: `docs/EAGER_LOADING.md`) | 5 |
 | **Segurança** | Completar validação de inputs (Joi) para rotas faltantes (ex.: `updateProfile`) e validar params/ids | 4 |
 | **Segurança** | Configurar CORS de forma restritiva                 | 3                       |
 | **DX/Refatoração** | Adicionar políticas de `restart` e healthchecks no Docker Compose; considerar `depends_on` com condição de saúde | 3 |
@@ -87,3 +87,18 @@ Com base no diagnóstico, a seguinte lista de tarefas foi criada e priorizada pa
 | **UI/UX** | Implementar feedback visual em formulários            | 2                       |
 | **UI/UX** | Adicionar `hover states` em elementos interativos       | 2                       |
 | **UI/UX** | Revisar e corrigir responsividade da aplicação (ajustar `breakpoints` do tema vs uso no `Container`) | 3 |
+
+---
+
+# Correções Executadas
+
+## 1. Estabilização do Ambiente Frontend
+
+Esta seção detalha a primeira onda de correções, focada em resolver os erros críticos de compilação e estabilizar o ambiente de desenvolvimento do frontend.
+
+* Ajustei o tema tipado do `styled-components` com `styled.d.ts`, eliminando os erros de tipagem no acesso às cores, espaçamentos e raios compartilhados.
+* Reescrevi o `Header`, `Footer` e a tela de login para usarem componentes locais com estilos declarativos, removendo dependências quebradas do antigo kit (`components/ui`).
+* Refatorei os componentes de formulário para utilizar apenas `styled-components`, mantendo o visual esperado sem herdar comportamentos não tipados.
+* Corrigi o fluxo de hooks avançados de posts (`usePostsAdvanced`) para alinhar as mutações com o contrato real das APIs, evitar estouro de `undefined` em contadores e remover referências a permissões inexistentes no tipo `User`.
+* Atualizei o `postService` e o interceptor de `api.ts` para aceitar filtros de array/boolean e evitar acessos a headers indefinidos.
+* Reinstalei as dependências do frontend (com os plugins Tailwind utilizados) e validei com `npm run build`, que agora compila com sucesso.
