@@ -1,11 +1,74 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Container, Box, Heading, Text, Button } from '../../components/ui';
 import { Form, FormGroup, Label, Input, ErrorText } from '../../components/forms';
 import { useAuth } from '../../hooks/useAuth';
 import { LoginRequest } from '../../types';
 import { toast } from 'react-toastify';
+import styled from 'styled-components';
+
+const PageContainer = styled.section`
+  min-height: calc(100vh - 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+`;
+
+const Card = styled.div`
+  width: 100%;
+  max-width: 400px;
+  background-color: #ffffff;
+  border-radius: ${({ theme }) => theme.radii.lg};
+  padding: 32px;
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`;
+
+const Title = styled.h1`
+  margin: 0;
+  text-align: center;
+  font-size: ${({ theme }) => theme.fontSizes['2xl']};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  color: ${({ theme }) => theme.colors.gray[900]};
+`;
+
+const SubmitButton = styled.button<{ $isLoading?: boolean }>`
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: ${({ theme }) => theme.radii.md};
+  border: none;
+  background-color: ${({ theme }) => theme.colors.primary[600]};
+  color: #ffffff;
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  cursor: ${({ $isLoading }) => ($isLoading ? 'not-allowed' : 'pointer')};
+  opacity: ${({ $isLoading }) => ($isLoading ? 0.7 : 1)};
+  transition: background-color 0.2s ease-in-out, opacity 0.2s ease-in-out;
+
+  &:hover {
+    background-color: ${({ theme, $isLoading }) =>
+      $isLoading ? theme.colors.primary[600] : theme.colors.primary[700]};
+  }
+`;
+
+const FooterText = styled.p`
+  text-align: center;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.gray[600]};
+
+  a {
+    color: ${({ theme }) => theme.colors.primary[600]};
+    font-weight: ${({ theme }) => theme.fontWeights.medium};
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+`;
 
 export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,16 +95,9 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="400px" mx="auto">
-      <Box 
-        bg="white" 
-        p={8} 
-        borderRadius="lg" 
-        boxShadow="md"
-      >
-        <Heading as="h1" textAlign="center" mb={6}>
-          Welcome Back
-        </Heading>
+    <PageContainer>
+      <Card>
+        <Title>Welcome Back</Title>
         
         <Form onSubmit={handleSubmit(onSubmit)}>
           <FormGroup>
@@ -80,23 +136,18 @@ export const LoginPage: React.FC = () => {
             {errors.password && <ErrorText>{errors.password.message}</ErrorText>}
           </FormGroup>
           
-          <Button 
-            type="submit" 
-            width="100%" 
-            isLoading={isLoading}
-            isDisabled={isLoading}
-          >
+          <SubmitButton type="submit" disabled={isLoading} $isLoading={isLoading}>
             {isLoading ? 'Signing in...' : 'Sign In'}
-          </Button>
+          </SubmitButton>
         </Form>
         
-        <Text textAlign="center" mt={6} color="gray.600">
+        <FooterText>
           Don't have an account?{' '}
           <Link to="/register">
             Sign up here
           </Link>
-        </Text>
-      </Box>
-    </Container>
+        </FooterText>
+      </Card>
+    </PageContainer>
   );
 };

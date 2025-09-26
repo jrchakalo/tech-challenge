@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Box } from '../ui';
 import { Header } from './Header';
 import { Footer } from './Footer';
 
