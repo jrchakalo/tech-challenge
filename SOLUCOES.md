@@ -115,8 +115,9 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 
 ---
 
-## 3. Hashing
+## 3. Hashing e fluxo de alteração de senha
 
 * Parametrizei o número de rounds do bcrypt em `backend/src/config/security.ts`, expondo `BCRYPT_SALT_ROUNDS` com fallback seguro e atualizando o model `User` para usar essa configuração. Teste: `npm test -- --testNamePattern="should create a new user successfully"` passou validando que o hash continua funcionando.
 * Acrescentei o fluxo protegido de troca de senha (`POST /auth/change-password`) com validações Joi para senha forte e confirmação, além do tratamento de erros para senhas iguais ou incorretas. Teste: `npm test -- --testNamePattern="should update the password when current password is valid"` confirmou a atualização com hash novo.
+* Ampliei a suíte com cenários negativos integrados, garantindo respostas 400 tanto para senha atual inválida quanto para confirmação divergente ao chamar `/auth/change-password`.
 
