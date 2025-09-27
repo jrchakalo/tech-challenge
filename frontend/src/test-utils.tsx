@@ -2,26 +2,38 @@ import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { ThemeProvider } from 'styled-components';
 import { MemoryRouter } from 'react-router-dom';
-import { AuthProvider } from './hooks/useAuth';   
+import { AuthProvider } from './hooks/useAuth';
 import { theme } from './styles/theme';
 
-const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
+interface AllProvidersProps {
+  children: React.ReactNode;
+  initialEntries?: string[];
+}
+
+const AllTheProviders = ({ children, initialEntries }: AllProvidersProps) => {
   return (
-    
     <ThemeProvider theme={theme}>
-      <MemoryRouter>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+      <MemoryRouter initialEntries={initialEntries}>
+        <AuthProvider>{children}</AuthProvider>
       </MemoryRouter>
     </ThemeProvider>
   );
 };
 
+interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
+  route?: string;
+}
+
 const customRender = (
   ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>,
-) => render(ui, { wrapper: AllTheProviders, ...options });
+  { route = '/', ...options }: CustomRenderOptions = {},
+) => {
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <AllTheProviders initialEntries={[route]}>{children}</AllTheProviders>
+  );
+
+  return render(ui, { wrapper: Wrapper, ...options });
+};
 
 export * from '@testing-library/react';
 

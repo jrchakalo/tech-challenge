@@ -134,3 +134,8 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 
 * Reescrevi asserções artificiais do `auth.test.ts` para validar serialização segura de usuários e garantir a verificação de tokens com `verifyToken`.
 
+---
+
+## 6. Correções de Testes Frontend
+
+* Ajustei `test-utils.tsx` para permitir rotas controladas, filtrei a prop `hasError` nos inputs estilizados e reescrevi `App.test.tsx` validando a tela de login real e o link de cadastro.
