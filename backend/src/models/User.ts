@@ -8,6 +8,7 @@ import {
 } from 'sequelize';
 import { sequelize } from '../config/database';
 import bcrypt from 'bcryptjs';
+import { BCRYPT_SALT_ROUNDS } from '../config/security';
 
 interface UserAttributes {
   id: number;
@@ -19,6 +20,8 @@ interface UserAttributes {
   avatar?: string;
   isActive: boolean;
   lastLogin?: Date;
+  resetPasswordToken?: string | null;
+  resetPasswordTokenExpires?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -35,6 +38,8 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public avatar?: string;
   public isActive!: boolean;
   public lastLogin?: Date;
+  public resetPasswordToken?: string | null;
+  public resetPasswordTokenExpires?: Date | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -58,6 +63,8 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public toJSON(): Omit<UserAttributes, 'password'> {
     const values = { ...this.get() } as any;
     delete values.password;
+    delete values.resetPasswordToken;
+    delete values.resetPasswordTokenExpires;
     return values;
   }
 }
@@ -114,6 +121,14 @@ User.init(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    resetPasswordToken: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    resetPasswordTokenExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     sequelize,
@@ -121,14 +136,12 @@ User.init(
     hooks: {
       beforeCreate: async (user: User) => {
         if (user.password) {
-          const saltRounds = 12;
-          user.password = await bcrypt.hash(user.password, saltRounds);
+          user.password = await bcrypt.hash(user.password, BCRYPT_SALT_ROUNDS);
         }
       },
       beforeUpdate: async (user: User) => {
         if (user.changed('password') && user.password) {
-          const saltRounds = 12;
-          user.password = await bcrypt.hash(user.password, saltRounds);
+          user.password = await bcrypt.hash(user.password, BCRYPT_SALT_ROUNDS);
         }
       },
     },
