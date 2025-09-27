@@ -1,21 +1,36 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions, VerifyOptions } from 'jsonwebtoken';
 import { JWTPayload } from '../types';
+import {
+  JWT_SECRET,
+  JWT_EXPIRES_IN,
+  JWT_REFRESH_SECRET,
+  JWT_REFRESH_EXPIRES_IN,
+} from '../config/security';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-fallback-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
-
-export const generateToken = (payload: Omit<JWTPayload, 'iat' | 'exp'>): string => {
-  return jwt.sign(payload as any, JWT_SECRET as any, {
-    expiresIn: JWT_EXPIRES_IN,
-  } as any);
+const accessTokenSignOptions: SignOptions = {
+  expiresIn: JWT_EXPIRES_IN as SignOptions['expiresIn'],
+  algorithm: 'HS512', // Mantemos uma cifra mais forte para evitar brute force.
 };
 
 export const verifyToken = (token: string): JWTPayload => {
-  return jwt.verify(token, JWT_SECRET as any) as JWTPayload;
+  const verifyOptions: VerifyOptions = { algorithms: ['HS512'] };
+  return jwt.verify(token, JWT_SECRET, verifyOptions) as JWTPayload;
+};
+
+const refreshTokenSignOptions: SignOptions = {
+  expiresIn: JWT_REFRESH_EXPIRES_IN as SignOptions['expiresIn'],
+  algorithm: 'HS512',
+};
+
+export const generateToken = (payload: Omit<JWTPayload, 'iat' | 'exp'>): string => {
+  return jwt.sign(payload, JWT_SECRET, accessTokenSignOptions);
 };
 
 export const generateRefreshToken = (payload: Omit<JWTPayload, 'iat' | 'exp'>): string => {
-  return jwt.sign(payload as any, JWT_SECRET as any, {
-    expiresIn: '30d',
-  } as any);
+  return jwt.sign(payload, JWT_REFRESH_SECRET, refreshTokenSignOptions);
+};
+
+export const verifyRefreshToken = (token: string): JWTPayload => {
+  const verifyOptions: VerifyOptions = { algorithms: ['HS512'] };
+  return jwt.verify(token, JWT_REFRESH_SECRET, verifyOptions) as JWTPayload;
 };

@@ -14,5 +14,6 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/tests/**',
   ],
+  setupFiles: ['<rootDir>/src/tests/env.ts'],
   setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
 };
