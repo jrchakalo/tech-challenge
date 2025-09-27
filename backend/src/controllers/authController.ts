@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 import { Post, User } from "../models";
@@ -5,9 +6,12 @@ import {
   AuthenticatedRequest,
   ChangePasswordRequest,
   CreateUserRequest,
+  ForgotPasswordRequest,
   LoginRequest,
+  ResetPasswordRequest,
 } from "../types";
 import { generateToken } from "../utils/jwt";
+import { PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES } from "../config/security";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -204,6 +208,87 @@ export const changePassword = async (
     res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
     console.error("Change password error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const requestPasswordReset = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { email }: ForgotPasswordRequest = req.body;
+
+    const user = await User.findOne({ where: { email } });
+    if (!user || !user.isActive) {
+      res.status(200).json({
+        message:
+          "Se o email estiver cadastrado, enviaremos instruções para recuperação de senha.",
+      });
+      return;
+    }
+
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const expiresAt = new Date(
+      Date.now() + PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES * 60 * 1000
+    );
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordTokenExpires = expiresAt;
+    await user.save();
+
+    const responsePayload: { message: string; resetToken?: string } = {
+      message:
+        "Se o email estiver cadastrado, enviaremos instruções para recuperação de senha.",
+    };
+
+    if (process.env.NODE_ENV === "test") {
+      responsePayload.resetToken = rawToken;
+    }
+
+    res.status(200).json(responsePayload);
+  } catch (error) {
+    console.error("Request password reset error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { token, newPassword }: ResetPasswordRequest = req.body;
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      where: {
+        resetPasswordToken: hashedToken,
+        resetPasswordTokenExpires: {
+          [Op.gt]: new Date(),
+        },
+        isActive: true,
+      },
+    });
+
+    if (!user) {
+      res.status(400).json({ error: "Token inválido ou expirado" });
+      return;
+    }
+
+    const isSamePassword = await user.validatePassword(newPassword);
+    if (isSamePassword) {
+      res.status(400).json({ error: "Nova senha deve ser diferente da atual" });
+      return;
+    }
+
+    user.password = newPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordTokenExpires = null;
+    await user.save();
+
+    res.status(200).json({ message: "Senha redefinida com sucesso" });
+  } catch (error) {
+    console.error("Reset password error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

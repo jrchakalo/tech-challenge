@@ -20,6 +20,8 @@ interface UserAttributes {
   avatar?: string;
   isActive: boolean;
   lastLogin?: Date;
+  resetPasswordToken?: string | null;
+  resetPasswordTokenExpires?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -36,6 +38,8 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public avatar?: string;
   public isActive!: boolean;
   public lastLogin?: Date;
+  public resetPasswordToken?: string | null;
+  public resetPasswordTokenExpires?: Date | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -59,6 +63,8 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public toJSON(): Omit<UserAttributes, 'password'> {
     const values = { ...this.get() } as any;
     delete values.password;
+    delete values.resetPasswordToken;
+    delete values.resetPasswordTokenExpires;
     return values;
   }
 }
@@ -112,6 +118,14 @@ User.init(
       defaultValue: true,
     },
     lastLogin: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    resetPasswordToken: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    resetPasswordTokenExpires: {
       type: DataTypes.DATE,
       allowNull: true,
     },

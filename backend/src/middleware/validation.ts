@@ -53,6 +53,31 @@ export const changePasswordSchema = Joi.object({
     }),
 });
 
+export const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+export const resetPasswordSchema = Joi.object({
+  token: Joi.string().length(64).hex().required().messages({
+    'string.length': 'Token de recuperação inválido',
+    'string.hex': 'Token de recuperação inválido',
+  }),
+  newPassword: Joi.string()
+    .min(8)
+    .max(255)
+    .pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Nova senha deve conter pelo menos uma letra e um número',
+    }),
+  confirmPassword: Joi.string()
+    .valid(Joi.ref('newPassword'))
+    .required()
+    .messages({
+      'any.only': 'Confirmação de senha não confere com a nova senha',
+    }),
+});
+
 // Post validation schemas
 export const createPostSchema = Joi.object({
   title: Joi.string().min(1).max(255).required(),
