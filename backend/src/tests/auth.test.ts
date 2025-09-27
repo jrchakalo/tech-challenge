@@ -1,5 +1,9 @@
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { Response } from 'express';
 import { User } from '../models';
 import { generateToken } from '../utils/jwt';
+import { changePassword } from '../controllers/authController';
+import { AuthenticatedRequest } from '../types';
 
 describe('Auth Controller', () => {
   beforeEach(async () => {
@@ -81,6 +85,46 @@ describe('Auth Controller', () => {
       
       // This will fail because we're expecting undefined
       expect(token).toBeUndefined();
+    });
+  });
+
+  describe('Change Password', () => {
+    it('should update the password when current password is valid', async () => {
+      const user = await User.create({
+        username: 'changepass',
+        email: 'changepass@example.com',
+        password: 'SenhaAtual123',
+      });
+
+      const req = {
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+        },
+        body: {
+          currentPassword: 'SenhaAtual123',
+          newPassword: 'NovaSenha123',
+          confirmPassword: 'NovaSenha123',
+        },
+      } as AuthenticatedRequest;
+
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      } as unknown as Response;
+
+      await changePassword(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Password updated successfully' });
+
+      const updatedUser = await User.findByPk(user.id);
+      const isOldPasswordValid = await updatedUser!.validatePassword('SenhaAtual123');
+      const isNewPasswordValid = await updatedUser!.validatePassword('NovaSenha123');
+
+      expect(isOldPasswordValid).toBe(false);
+      expect(isNewPasswordValid).toBe(true);
     });
   });
 });

@@ -33,6 +33,26 @@ export const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+export const changePasswordSchema = Joi.object({
+  currentPassword: Joi.string().min(6).max(255).required(),
+  newPassword: Joi.string()
+    .min(8)
+    .max(255)
+    .pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/)
+    .disallow(Joi.ref('currentPassword'))
+    .required()
+    .messages({
+      'string.pattern.base': 'Nova senha deve conter pelo menos uma letra e um número',
+      'any.disallow': 'Nova senha deve ser diferente da senha atual',
+    }),
+  confirmPassword: Joi.string()
+    .valid(Joi.ref('newPassword'))
+    .required()
+    .messages({
+      'any.only': 'Confirmação de senha não confere com a nova senha',
+    }),
+});
+
 // Post validation schemas
 export const createPostSchema = Joi.object({
   title: Joi.string().min(1).max(255).required(),

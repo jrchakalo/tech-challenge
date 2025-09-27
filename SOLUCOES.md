@@ -103,6 +103,8 @@ Esta seção detalha a primeira onda de correções, focada em resolver os erros
 * Atualizei o `postService` e o interceptor de `api.ts` para aceitar filtros de array/boolean e evitar acessos a headers indefinidos.
 * Reinstalei as dependências do frontend (com os plugins Tailwind utilizados) e validei com `npm run build`, que agora compila com sucesso.
 
+---
+
 ## 2. Configurações do Docker
 
 Esta seção detalha as correções referentes à otimização do ambiente Docker. O Dockerfile original foi refatorado para resultar em uma imagem de produção mais segura e eficiente.
@@ -110,3 +112,11 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 * Refatorei o `backend/Dockerfile` para um build multi-stage, para instalar dependências de dev antes de compilar e entrega imagem enxuta para produção.
 * Ajustei o `docker-compose.yml` para evitar volumes que sobrescrevem o build, retirei as senhas em texto plano, adicionei healthchecks, políticas de restart e corrigi a URL do frontend para `http://backend:3001/api`. Teste: `JWT_SECRET=test docker compose config` retornou a composição saudável.
 * Criei `.env` e `.env.example` na raiz do projeto para as variáveis de ambiente.
+
+---
+
+## 3. Hashing
+
+* Parametrizei o número de rounds do bcrypt em `backend/src/config/security.ts`, expondo `BCRYPT_SALT_ROUNDS` com fallback seguro e atualizando o model `User` para usar essa configuração. Teste: `npm test -- --testNamePattern="should create a new user successfully"` passou validando que o hash continua funcionando.
+* Acrescentei o fluxo protegido de troca de senha (`POST /auth/change-password`) com validações Joi para senha forte e confirmação, além do tratamento de erros para senhas iguais ou incorretas. Teste: `npm test -- --testNamePattern="should update the password when current password is valid"` confirmou a atualização com hash novo.
+

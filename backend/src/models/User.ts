@@ -8,6 +8,7 @@ import {
 } from 'sequelize';
 import { sequelize } from '../config/database';
 import bcrypt from 'bcryptjs';
+import { BCRYPT_SALT_ROUNDS } from '../config/security';
 
 interface UserAttributes {
   id: number;
@@ -121,14 +122,12 @@ User.init(
     hooks: {
       beforeCreate: async (user: User) => {
         if (user.password) {
-          const saltRounds = 12;
-          user.password = await bcrypt.hash(user.password, saltRounds);
+          user.password = await bcrypt.hash(user.password, BCRYPT_SALT_ROUNDS);
         }
       },
       beforeUpdate: async (user: User) => {
         if (user.changed('password') && user.password) {
-          const saltRounds = 12;
-          user.password = await bcrypt.hash(user.password, saltRounds);
+          user.password = await bcrypt.hash(user.password, BCRYPT_SALT_ROUNDS);
         }
       },
     },

@@ -3,6 +3,7 @@ import { Op } from "sequelize";
 import { Post, User } from "../models";
 import {
   AuthenticatedRequest,
+  ChangePasswordRequest,
   CreateUserRequest,
   LoginRequest,
 } from "../types";
@@ -163,6 +164,46 @@ export const updateProfile = async (
     });
   } catch (error) {
     console.error("Update profile error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const changePassword = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: "User not authenticated" });
+      return;
+    }
+
+    const { currentPassword, newPassword }: ChangePasswordRequest = req.body;
+
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    const isCurrentValid = await user.validatePassword(currentPassword);
+    if (!isCurrentValid) {
+      res.status(400).json({ error: "Current password is incorrect" });
+      return;
+    }
+
+    const isSamePassword = await user.validatePassword(newPassword);
+    if (isSamePassword) {
+      res.status(400).json({ error: "New password must be different" });
+      return;
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Change password error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
