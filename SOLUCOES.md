@@ -122,13 +122,20 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 * Ampliei a suíte com cenários negativos integrados, garantindo respostas 400 tanto para senha atual inválida quanto para confirmação divergente ao chamar `/auth/change-password`.
 * Estruturei recuperação de senha segura com tokens temporários (rotas `/auth/forgot-password` e `/auth/reset-password`), armazenando hash + expiração configurável e cobrindo fluxos felizes/negativos via Supertest.
 
----
-
 ## 4. Fortalecer segurança do JWT
 
 * Centralizei a configuração de tokens exigindo segredos fortes distintos para acesso e refresh, removendo fallbacks inseguros..
 * Bloqueei o uso de segredos idênticos entre acesso e refresh, forçando diferenciação já no boot da aplicação para mitigar reutilização indevida.
-* Criei o arquivo `env.ts` para facilitar a exeução dos testes.
+* Criei o arquivo `env.ts` para facilitar a exeução
 
 ---
 
+## 5. Correções de Testes Backend
+
+* Reescrevi asserções artificiais do `auth.test.ts` para validar serialização segura de usuários e garantir a verificação de tokens com `verifyToken`.
+
+---
+
+## 6. Correções de Testes Frontend
+
+* Ajustei `test-utils.tsx` para permitir rotas controladas, filtrei a prop `hasError` nos inputs estilizados e reescrevi `App.test.tsx` validando a tela de login real e o link de cadastro.

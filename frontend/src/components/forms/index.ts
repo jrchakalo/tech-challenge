@@ -19,7 +19,9 @@ export const Label = styled.label`
   cursor: pointer;
 `;
 
-export const Input = styled.input<{ hasError?: boolean }>`
+export const Input = styled.input.withConfig({
+  shouldForwardProp: (prop) => prop !== 'hasError',
+})<{ hasError?: boolean }>`
   padding: ${({ theme }) => theme.space[3]};
   border: 1px solid ${({ theme, hasError }) => 
     hasError ? theme.colors.red[500] : theme.colors.gray[300]};
@@ -40,7 +42,9 @@ export const Input = styled.input<{ hasError?: boolean }>`
   }
 `;
 
-export const TextArea = styled.textarea<{ hasError?: boolean }>`
+export const TextArea = styled.textarea.withConfig({
+  shouldForwardProp: (prop) => prop !== 'hasError',
+})<{ hasError?: boolean }>`
   padding: ${({ theme }) => theme.space[3]};
   border: 1px solid ${({ theme, hasError }) => 
     hasError ? theme.colors.red[500] : theme.colors.gray[300]};
@@ -64,7 +68,9 @@ export const TextArea = styled.textarea<{ hasError?: boolean }>`
   }
 `;
 
-export const Select = styled.select<{ hasError?: boolean }>`
+export const Select = styled.select.withConfig({
+  shouldForwardProp: (prop) => prop !== 'hasError',
+})<{ hasError?: boolean }>`
   padding: ${({ theme }) => theme.space[3]};
   border: 1px solid ${({ theme, hasError }) => 
     hasError ? theme.colors.red[500] : theme.colors.gray[300]};

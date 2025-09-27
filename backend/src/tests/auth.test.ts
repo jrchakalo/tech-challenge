@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import express, { Response } from 'express';
 import request from 'supertest';
 import { User } from '../models';
-import { generateToken } from '../utils/jwt';
+import { generateToken, verifyToken } from '../utils/jwt';
 import { changePassword, requestPasswordReset, resetPassword } from '../controllers/authController';
 import { AuthenticatedRequest } from '../types';
 import { validateRequest, changePasswordSchema, forgotPasswordSchema, resetPasswordSchema } from '../middleware/validation';
@@ -29,7 +29,7 @@ describe('Auth Controller', () => {
       expect(user.email).toBe(userData.email);
       expect(user.firstName).toBe(userData.firstName);
       expect(user.lastName).toBe(userData.lastName);
-      expect(user.password).not.toBe(userData.password); // Should be hashed
+      expect(user.password).not.toBe(userData.password); // Senha armazenada deve estar hasheada
     });
 
     it('should validate password correctly', async () => {
@@ -48,8 +48,7 @@ describe('Auth Controller', () => {
       expect(isInvalid).toBe(false);
     });
 
-    // Intentionally broken test
-    it.skip('should fail - broken test example', async () => {
+    it('should omit sensitive data when serializing the user', async () => {
       const userData = {
         username: 'testuser',
         email: 'test@example.com',
@@ -57,9 +56,10 @@ describe('Auth Controller', () => {
       };
 
       const user = await User.create(userData);
-      
-      // This test will fail because we're expecting the wrong value
-      expect(user.username).toBe('wrongusername');
+      const serialized = user.toJSON() as Record<string, unknown>;
+
+      expect(serialized.password).toBeUndefined();
+      expect(serialized.email).toBe(userData.email);
     });
   });
 
@@ -70,14 +70,17 @@ describe('Auth Controller', () => {
         email: 'test@example.com',
         username: 'testuser',
       };
-
       const token = generateToken(payload);
       expect(token).toBeDefined();
       expect(typeof token).toBe('string');
+
+      const decoded = verifyToken(token);
+      expect(decoded.id).toBe(payload.id);
+      expect(decoded.email).toBe(payload.email);
+      expect(decoded.username).toBe(payload.username);
     });
 
-    // Intentionally broken test
-    it.skip('should fail - broken JWT test', () => {
+    it('should reject tokens com assinatura inválida', () => {
       const payload = {
         id: 1,
         email: 'test@example.com',
@@ -85,9 +88,10 @@ describe('Auth Controller', () => {
       };
 
       const token = generateToken(payload);
-      
-      // This will fail because we're expecting undefined
-      expect(token).toBeUndefined();
+      const parts = token.split('.');
+      const tokenManipulado = `${parts[0]}.${parts[1]}.assinatura-falsa`;
+
+      expect(() => verifyToken(tokenManipulado)).toThrow();
     });
   });
 
