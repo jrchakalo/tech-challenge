@@ -1,12 +1,29 @@
+import fs from 'fs';
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
+const readSecretFile = (filePath?: string): string | undefined => {
+  if (!filePath) {
+    return undefined;
+  }
+
+  try {
+    const content = fs.readFileSync(filePath, 'utf-8').trim();
+    return content.length > 0 ? content : undefined;
+  } catch (error) {
+    console.warn(`⚠️  Não foi possível ler o arquivo de segredo em ${filePath}:`, error);
+    return undefined;
+  }
+};
+
+const dbPassword = readSecretFile(process.env.DB_PASSWORD_FILE) || process.env.DB_PASSWORD || 'password123';
+
 const sequelize = new Sequelize({
   database: process.env.DB_NAME || 'tech_challenge_blog',
   username: process.env.DB_USER || 'admin',
-  password: process.env.DB_PASSWORD || 'password123',
+  password: dbPassword,
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432'),
   dialect: 'postgres',
