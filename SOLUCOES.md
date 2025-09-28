@@ -86,7 +86,7 @@ Com base no diagnóstico, a seguinte lista de tarefas foi criada e priorizada pa
 | **DX/Refatoração** | Separar `docker-compose` de desenvolvimento e produção para evitar sobrescritas de artefatos | 3 |
 | **UI/UX** | Implementar feedback visual em formulários            | 2                       |
 | **UI/UX** | Adicionar `hover states` em elementos interativos       | 2                       |
-| **UI/UX** | Revisar e corrigir responsividade da aplicação (ajustar `breakpoints` do tema vs uso no `Container`) | 3 |
+| **UI/UX** | Revisar e corrigir responsividade da aplicação | 3 |
 
 ---
 
@@ -163,3 +163,12 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 
 * Centralizei a configuração de CORS em `config/cors.ts`, validando a lista de origens permitidas a partir de `CORS_ALLOWED_ORIGINS` e descartando URLs malformadas com um aviso.
 * Atualizei o Express para usar essa configuração compartilhada, liberando apenas métodos, cabeçalhos e origens necessários para o frontend.
+
+---
+
+## 10. Revisar e Corrigir Responsividade da Aplicação
+
+* Ajustei utilidades globais (`.desktop-only`, `.sr-only`, scrollbar) para evitar vazamentos de layout, manter acessibilidade e suavizar a experiência em telas menores.
+* Atualizei o `FileInput` com leitura clara do arquivo, foco visível e botão adaptável em mobile, removendo animações custosas.
+* Reorganizei o cabeçalho com menu colapsável, garantindo navegação plena em dispositivos móveis e retomando o layout horizontal em desktops.
+* Teste: `cd frontend && npm test -- --watchAll=false`.

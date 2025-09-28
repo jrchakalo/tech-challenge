@@ -101,37 +101,43 @@ export const HelpText = styled.p`
 
 // Intentional CSS issue: File input styling problems
 export const FileInput = styled.input.attrs({ type: 'file' })`
-  /* This styling will look broken on different browsers */
   width: 100%;
   padding: ${({ theme }) => theme.space[3]};
   border: 2px dashed ${({ theme }) => theme.colors.gray[300]};
   border-radius: ${({ theme }) => theme.radii.md};
   background-color: ${({ theme }) => theme.colors.gray[50]};
   cursor: pointer;
-  font-size: 0; /* This will hide the filename text completely */
-  
-  /* This will cause layout issues */
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.gray[600]};
+  transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+
+  &:focus-visible {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary[500]};
+    background-color: ${({ theme }) => theme.colors.primary[50]};
+  }
+
   &::file-selector-button {
-    margin-right: 20px;
-    border: none;
-    background: ${({ theme }) => theme.colors.primary[500]};
+    margin-right: ${({ theme }) => theme.space[3]};
+    border: 1px solid transparent;
+    background: ${({ theme }) => theme.colors.primary[600]};
     padding: ${({ theme }) => theme.space[2]} ${({ theme }) => theme.space[4]};
     border-radius: ${({ theme }) => theme.radii.sm};
-    color: white;
+    color: #ffffff;
     cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
     font-size: ${({ theme }) => theme.fontSizes.sm};
-    /* Missing proper positioning and responsive design */
+    transition: background-color 0.2s ease-in-out;
   }
-  
+
   &::file-selector-button:hover {
-    background: ${({ theme }) => theme.colors.primary[600]};
-    /* Expensive animation without optimization */
-    animation: file-button-hover 0.5s ease-in-out infinite alternate;
+    background: ${({ theme }) => theme.colors.primary[700]};
   }
-  
-  @keyframes file-button-hover {
-    from { transform: translateY(0px); }
-    to { transform: translateY(-2px); }
+
+  @media (max-width: ${({ theme }) => theme.media.md}) {
+    &::file-selector-button {
+      width: 100%;
+      margin: 0 0 ${({ theme }) => theme.space[2]};
+      text-align: center;
+    }
   }
 `;

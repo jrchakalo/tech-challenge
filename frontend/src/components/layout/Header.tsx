@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../hooks/useAuth';
@@ -18,9 +18,21 @@ const HeaderContent = styled.div`
   margin: 0 auto;
   padding: 16px 24px;
   display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (min-width: ${({ theme }) => theme.media.md}) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+`;
+
+const HeaderTop = styled.div`
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 `;
 
 const Logo = styled(Link)`
@@ -49,10 +61,19 @@ const NavLink = styled(Link)`
   }
 `;
 
-const NavGroup = styled.nav`
+const NavGroup = styled.nav<{ $isOpen: boolean }>`
   display: flex;
   align-items: center;
   gap: 16px;
+
+  @media (max-width: ${({ theme }) => theme.media.md}) {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    padding: ${({ theme }) => theme.space[3]} 0;
+    border-top: 1px solid ${({ theme }) => theme.colors.gray[200]};
+    display: ${({ $isOpen }) => ($isOpen ? 'flex' : 'none')};
+  }
 `;
 
 const UserMenu = styled.div`
@@ -94,6 +115,28 @@ const UserName = styled.span`
   color: ${({ theme }) => theme.colors.gray[600]};
 `;
 
+const MobileMenuButton = styled.button`
+  border: 1px solid ${({ theme }) => theme.colors.gray[200]};
+  background: #ffffff;
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: 8px 12px;
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  display: none;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.gray[100]};
+  }
+
+  @media (max-width: ${({ theme }) => theme.media.md}) {
+    display: inline-flex;
+  }
+`;
+
 // Botão reaproveitável com "variants" simples para manter consistência visual no topo da página.
 const ActionButton = styled.button<{ $variant?: 'solid' | 'ghost' }>`
   border: ${({ $variant, theme }) =>
@@ -122,23 +165,45 @@ const ActionButton = styled.button<{ $variant?: 'solid' | 'ghost' }>`
 `;
 
 export const Header: React.FC = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
+    setIsMenuOpen(false);
   };
+
+  const handleToggleMenu = () => {
+    setIsMenuOpen((prev) => !prev);
+  };
+
+  const navId = 'primary-navigation';
 
   return (
     <HeaderContainer>
       <HeaderContent>
-        <Logo to="/">TechBlog</Logo>
+        <HeaderTop>
+          <Logo to="/">TechBlog</Logo>
+          <MobileMenuButton
+            type="button"
+            onClick={handleToggleMenu}
+            aria-expanded={isMenuOpen}
+            aria-controls={navId}
+          >
+            Menu
+          </MobileMenuButton>
+        </HeaderTop>
 
-        <NavGroup>
-          <NavLink to="/">Posts</NavLink>
+        <NavGroup id={navId} $isOpen={isMenuOpen}>
+          <NavLink to="/" onClick={() => setIsMenuOpen(false)}>
+            Posts
+          </NavLink>
 
           {isAuthenticated ? (
             <>
-              <NavLink to="/create">Write</NavLink>
+              <NavLink to="/create" onClick={() => setIsMenuOpen(false)}>
+                Write
+              </NavLink>
               <UserMenu>
                 <UserButton>
                   <Avatar>{user?.username?.charAt(0)?.toUpperCase() || 'U'}</Avatar>
@@ -151,8 +216,10 @@ export const Header: React.FC = () => {
             </>
           ) : (
             <>
-              <NavLink to="/login">Login</NavLink>
-              <ActionButton as={Link} to="/register">
+              <NavLink to="/login" onClick={() => setIsMenuOpen(false)}>
+                Login
+              </NavLink>
+              <ActionButton as={Link} to="/register" onClick={() => setIsMenuOpen(false)}>
                 Criar conta
               </ActionButton>
             </>
