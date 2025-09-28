@@ -7,6 +7,7 @@ import {
   FlagCommentRequest,
   ModerationActionRequest,
 } from '../types';
+import { getIO } from '../realtime/socket';
 
 type CommentStatus = 'pending' | 'approved' | 'rejected' | 'flagged';
 
@@ -187,6 +188,13 @@ export const createComment = async (req: AuthenticatedRequest, res: Response): P
       include: [{ ...baseAuthorInclude }],
     });
 
+    const io = getIO();
+    if (io) {
+      io.emit('comment:created', {
+        comment: comment.toJSON(),
+      });
+    }
+
     res.status(201).json({
       message: 'Comment created successfully',
       comment,
@@ -232,6 +240,13 @@ export const updateComment = async (req: AuthenticatedRequest, res: Response): P
       include: [{ ...baseAuthorInclude }],
     });
 
+    const io = getIO();
+    if (io) {
+      io.emit('comment:updated', {
+        comment: comment.toJSON(),
+      });
+    }
+
     res.status(200).json({
       message: 'Comment updated successfully',
       comment,
@@ -265,7 +280,18 @@ export const deleteComment = async (req: AuthenticatedRequest, res: Response): P
       return;
     }
 
+    const commentId = comment.id;
+    const postId = comment.postId;
+
     await comment.destroy();
+
+    const io = getIO();
+    if (io) {
+      io.emit('comment:deleted', {
+        commentId,
+        postId,
+      });
+    }
 
     res.status(200).json({
       message: 'Comment deleted successfully',
@@ -311,6 +337,15 @@ export const approveComment = async (req: AuthenticatedRequest, res: Response): 
       ],
     });
 
+    const io = getIO();
+    if (io) {
+      io.emit('comment:moderated', {
+        comment: comment.toJSON(),
+        actorId: req.user.id,
+        action: 'approved',
+      });
+    }
+
     res.status(200).json({
       message: 'Comment approved successfully',
       comment,
@@ -355,6 +390,15 @@ export const rejectComment = async (req: AuthenticatedRequest, res: Response): P
         { model: Post, as: 'post', attributes: ['id', 'title'] },
       ],
     });
+
+    const io = getIO();
+    if (io) {
+      io.emit('comment:moderated', {
+        comment: comment.toJSON(),
+        actorId: req.user.id,
+        action: 'rejected',
+      });
+    }
 
     res.status(200).json({
       message: 'Comment rejected successfully',
@@ -412,6 +456,15 @@ export const flagComment = async (req: AuthenticatedRequest, res: Response): Pro
         { model: Post, as: 'post', attributes: ['id', 'title'] },
       ],
     });
+
+    const io = getIO();
+    if (io) {
+      io.emit('comment:moderated', {
+        comment: comment.toJSON(),
+        actorId: req.user.id,
+        action: 'flagged',
+      });
+    }
 
     res.status(200).json({
       message: 'Comment flagged for review',
