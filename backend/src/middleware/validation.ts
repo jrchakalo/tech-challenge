@@ -1,10 +1,16 @@
 import Joi from 'joi';
 import { Request, Response, NextFunction } from 'express';
 
-export const validateRequest = (schema: Joi.ObjectSchema) => {
+type RequestProperty = 'body' | 'params' | 'query';
+
+export const validateRequest = (schema: Joi.Schema, property: RequestProperty = 'body') => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const { error } = schema.validate(req.body);
-    
+    const { error, value } = schema.validate(req[property], {
+      abortEarly: false,
+      stripUnknown: true,
+      convert: true,
+    });
+
     if (error) {
       const errorMessage = error.details.map(detail => detail.message).join(', ');
       res.status(400).json({ 
@@ -14,7 +20,9 @@ export const validateRequest = (schema: Joi.ObjectSchema) => {
       });
       return;
     }
-    
+
+    (req as any)[property] = value;
+
     next();
   };
 };
@@ -100,4 +108,12 @@ export const createCommentSchema = Joi.object({
   content: Joi.string().min(1).max(5000).required(),
   postId: Joi.number().integer().positive().required(),
   parentId: Joi.number().integer().positive().optional(),
+});
+
+export const idParamSchema = Joi.object({
+  id: Joi.number().integer().positive().required(),
+});
+
+export const postIdParamSchema = Joi.object({
+  postId: Joi.number().integer().positive().required(),
 });
