@@ -19,6 +19,7 @@ interface UserAttributes {
   lastName?: string;
   avatar?: string;
   isActive: boolean;
+  role: 'user' | 'moderator' | 'admin';
   lastLogin?: Date;
   resetPasswordToken?: string | null;
   resetPasswordTokenExpires?: Date | null;
@@ -26,7 +27,7 @@ interface UserAttributes {
   updatedAt?: Date;
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'isActive' | 'createdAt' | 'updatedAt'> {}
+interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'isActive' | 'role' | 'createdAt' | 'updatedAt'> {}
 
 class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: number;
@@ -37,6 +38,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public lastName?: string;
   public avatar?: string;
   public isActive!: boolean;
+  public role!: 'user' | 'moderator' | 'admin';
   public lastLogin?: Date;
   public resetPasswordToken?: string | null;
   public resetPasswordTokenExpires?: Date | null;
@@ -128,6 +130,11 @@ User.init(
     resetPasswordTokenExpires: {
       type: DataTypes.DATE,
       allowNull: true,
+    },
+    role: {
+      type: DataTypes.ENUM('user', 'moderator', 'admin'),
+      allowNull: false,
+      defaultValue: 'user',
     },
   },
   {

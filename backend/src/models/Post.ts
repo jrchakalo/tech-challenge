@@ -55,6 +55,29 @@ class Post extends Model<PostAttributes, PostCreationAttributes> implements Post
 
 }
 
+const tagsColumn = sequelize.getDialect() === 'postgres'
+  ? DataTypes.ARRAY(DataTypes.STRING)
+  : DataTypes.JSON;
+
+const postIndexes: any[] = [
+  {
+    fields: ['authorId'],
+  },
+  {
+    fields: ['isPublished'],
+  },
+  {
+    fields: ['publishedAt'],
+  },
+];
+
+if (sequelize.getDialect() === 'postgres') {
+  postIndexes.push({
+    fields: ['tags'],
+    using: 'gin',
+  });
+}
+
 Post.init(
   {
     id: {
@@ -85,7 +108,7 @@ Post.init(
       allowNull: true,
     },
     tags: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
+      type: tagsColumn,
       allowNull: true,
       defaultValue: [],
     },
@@ -116,21 +139,7 @@ Post.init(
   {
     sequelize,
     tableName: 'posts',
-    indexes: [
-      {
-        fields: ['authorId'],
-      },
-      {
-        fields: ['isPublished'],
-      },
-      {
-        fields: ['publishedAt'],
-      },
-      {
-        fields: ['tags'],
-        using: 'gin',
-      },
-    ],
+    indexes: postIndexes,
   }
 );
 

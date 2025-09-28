@@ -116,6 +116,30 @@ export const updateCommentSchema = Joi.object({
   content: Joi.string().min(1).max(5000).required(),
 });
 
+const moderationReasonField = Joi.string().trim().max(1000).empty('').allow(null);
+
+export const moderationActionSchema = Joi.object({
+  reason: moderationReasonField,
+});
+
+export const flagCommentSchema = Joi.object({
+  reason: moderationReasonField,
+});
+
+const moderationStatus = Joi.string().valid('pending', 'approved', 'rejected', 'flagged');
+
+export const commentListQuerySchema = Joi.object({
+  page: Joi.number().integer().positive().default(1),
+  limit: Joi.number().integer().positive().max(50).default(20),
+  status: Joi.alternatives().try(moderationStatus, Joi.array().items(moderationStatus)).optional(),
+});
+
+export const moderationQueueQuerySchema = Joi.object({
+  status: Joi.alternatives().try(moderationStatus, Joi.array().items(moderationStatus)).optional(),
+  page: Joi.number().integer().positive().default(1),
+  limit: Joi.number().integer().positive().max(100).default(20),
+});
+
 export const updateProfileSchema = Joi.object({
   firstName: Joi.string().max(100).optional(),
   lastName: Joi.string().max(100).optional(),
