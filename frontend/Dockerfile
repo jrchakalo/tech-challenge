@@ -17,6 +17,12 @@ RUN npm run build
 # Install serve to run the app
 RUN npm install -g serve
 
+# Create non-root user for runtime
+RUN addgroup -S webapp \
+	&& adduser -S webapp -G webapp \
+	&& chown -R webapp:webapp /app
+USER webapp
+
 # Expose port
 EXPOSE 3000
 
