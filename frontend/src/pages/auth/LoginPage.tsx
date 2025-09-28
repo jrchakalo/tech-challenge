@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Form, FormGroup, Label, Input, ErrorText } from '../../components/forms';
+import { Form, FormGroup, Label, Input, ErrorText, FormStatus, Spinner } from '../../components/forms';
 import { useAuth } from '../../hooks/useAuth';
 import { LoginRequest } from '../../types';
 import { toast } from 'react-toastify';
@@ -44,6 +44,10 @@ const SubmitButton = styled.button<{ $isLoading?: boolean }>`
   color: #ffffff;
   font-size: ${({ theme }) => theme.fontSizes.base};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.space[2]};
   cursor: ${({ $isLoading }) => ($isLoading ? 'not-allowed' : 'pointer')};
   opacity: ${({ $isLoading }) => ($isLoading ? 0.7 : 1)};
   transition: background-color 0.2s ease-in-out, opacity 0.2s ease-in-out;
@@ -72,6 +76,7 @@ const FooterText = styled.p`
 
 export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const { login } = useAuth();
   const navigate = useNavigate();
   
@@ -82,13 +87,17 @@ export const LoginPage: React.FC = () => {
   } = useForm<LoginRequest>();
 
   const onSubmit = async (data: LoginRequest) => {
+    setStatus(null);
     setIsLoading(true);
     try {
       await login(data.email, data.password);
+      setStatus({ type: 'success', message: 'Login realizado com sucesso. Redirecionando...' });
       toast.success('Logged in successfully!');
       navigate('/');
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Login failed');
+      const message = error.response?.data?.error || 'Não foi possível entrar, tente novamente com outras credenciais.';
+      setStatus({ type: 'error', message });
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -98,8 +107,14 @@ export const LoginPage: React.FC = () => {
     <PageContainer>
       <Card>
         <Title>Welcome Back</Title>
+
+        {status && (
+          <FormStatus $variant={status.type} role={status.type === 'error' ? 'alert' : 'status'}>
+            {status.message}
+          </FormStatus>
+        )}
         
-        <Form onSubmit={handleSubmit(onSubmit)}>
+        <Form onSubmit={handleSubmit(onSubmit)} noValidate>
           <FormGroup>
             <Label htmlFor="email">Email</Label>
             <Input
@@ -107,6 +122,8 @@ export const LoginPage: React.FC = () => {
               type="email"
               placeholder="Enter your email"
               hasError={!!errors.email}
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? 'email-error' : undefined}
               {...register('email', {
                 required: 'Email is required',
                 pattern: {
@@ -115,7 +132,7 @@ export const LoginPage: React.FC = () => {
                 },
               })}
             />
-            {errors.email && <ErrorText>{errors.email.message}</ErrorText>}
+            {errors.email && <ErrorText id="email-error">{errors.email.message}</ErrorText>}
           </FormGroup>
           
           <FormGroup>
@@ -125,6 +142,8 @@ export const LoginPage: React.FC = () => {
               type="password"
               placeholder="Enter your password"
               hasError={!!errors.password}
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? 'password-error' : undefined}
               {...register('password', {
                 required: 'Password is required',
                 minLength: {
@@ -133,10 +152,11 @@ export const LoginPage: React.FC = () => {
                 },
               })}
             />
-            {errors.password && <ErrorText>{errors.password.message}</ErrorText>}
+            {errors.password && <ErrorText id="password-error">{errors.password.message}</ErrorText>}
           </FormGroup>
           
           <SubmitButton type="submit" disabled={isLoading} $isLoading={isLoading}>
+            {isLoading && <Spinner aria-hidden="true" />}
             {isLoading ? 'Signing in...' : 'Sign In'}
           </SubmitButton>
         </Form>

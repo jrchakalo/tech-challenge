@@ -171,4 +171,10 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 * Ajustei utilidades globais (`.desktop-only`, `.sr-only`, scrollbar) para evitar vazamentos de layout, manter acessibilidade e suavizar a experiência em telas menores.
 * Atualizei o `FileInput` com leitura clara do arquivo, foco visível e botão adaptável em mobile, removendo animações custosas.
 * Reorganizei o cabeçalho com menu colapsável, garantindo navegação plena em dispositivos móveis e retomando o layout horizontal em desktops.
-* Teste: `cd frontend && npm test -- --watchAll=false`.
+
+---
+
+## 11. Feedback Visual em Formulários
+
+* Adicionei banners de status reutilizáveis e um spinner leve para dar retorno imediato sobre envio, sucesso ou falha.
+* Ajustei o formulário de login para expor mensagens de erro locais, estados focados acessíveis e feedback claro durante o carregamento.

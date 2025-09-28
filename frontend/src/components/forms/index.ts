@@ -12,6 +12,26 @@ export const FormGroup = styled.div`
   gap: ${({ theme }) => theme.space[2]};
 `;
 
+export const FormStatus = styled.div<{ $variant?: 'success' | 'error' | 'info' }>`
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: ${({ theme }) => theme.space[3]};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[3]};
+
+  ${({ $variant, theme }) => {
+    switch ($variant) {
+      case 'success':
+        return `background: ${theme.colors.green[50]}; color: ${theme.colors.green[700]}; border: 1px solid ${theme.colors.green[100]};`;
+      case 'error':
+        return `background: ${theme.colors.red[50]}; color: ${theme.colors.red[700]}; border: 1px solid ${theme.colors.red[100]};`;
+      default:
+        return `background: ${theme.colors.yellow[50]}; color: ${theme.colors.yellow[700]}; border: 1px solid ${theme.colors.yellow[100]};`;
+    }
+  }}
+`;
+
 export const Label = styled.label`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
@@ -97,6 +117,26 @@ export const ErrorText = styled.p`
 export const HelpText = styled.p`
   color: ${({ theme }) => theme.colors.gray[500]};
   font-size: ${({ theme }) => theme.fontSizes.sm};
+`;
+
+export const FieldFeedback = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.gray[500]};
+`;
+
+export const Spinner = styled.span`
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  border: 2px solid ${({ theme }) => theme.colors.primary[100]};
+  border-top-color: ${({ theme }) => theme.colors.primary[600]};
+  animation: spin 0.6s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 `;
 
 // Intentional CSS issue: File input styling problems
