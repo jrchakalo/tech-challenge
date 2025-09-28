@@ -73,6 +73,10 @@ web_modules/
 .env.*
 !.env.example
 
+# Docker secrets (actual secret files ignored, keep examples)
+secrets/*.txt
+!secrets/*.txt.example
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

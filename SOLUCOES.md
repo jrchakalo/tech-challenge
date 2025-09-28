@@ -185,3 +185,16 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 
 * Refinei `Input`, `TextArea`, `Select` e `FileInput` para mudar bordas e fundo ao passar o mouse, reforçando a sensação de campos clicáveis.
 * Mantive suporte aos estados de erro, garantindo que o hover respeite o destaque em vermelho quando necessário.
+
+## 13. Melhoria dos Contêineres e Segredos do Docker
+
+* Atualizei os Dockerfiles do backend e do frontend para executar com usuários dedicados sem privilégios de root, reduzindo a superfície de ataque durante a execução.
+* Adicionei limites de CPU e memória no `docker-compose.yml`, além de healthchecks já existentes, para evitar que um serviço monopolize recursos.
+* Migrei as credenciais sensíveis (senha do banco e segredos JWT) para Docker secrets com arquivos de exemplo em `secrets/`, incluindo suporte a variáveis `*_FILE` no backend.
+* Ampliei a documentação de ambiente (`.env.example`) e ignorei os arquivos reais de segredo para evitar commits acidentais.
+
+## Possíveis Melhorias
+
+* Separar compose de desenvolvimento e produção caso seja necessário um fluxo com volumes montados em modo live reload.
+* Otimizar ainda mais `getPostById` adotando agregações e includes, alinhando a consulta às melhorias descritas no `docs/EAGER_LOADING.md`.
+* Disponibilizar uma estratégia alternativa de upload via Presigned URL conforme o guia `docs/S3_UPLOAD_STRATEGIES.md`.
