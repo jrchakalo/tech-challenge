@@ -156,11 +156,11 @@ const ActionButton = styled.button<{ $variant?: 'solid' | 'ghost' }>`
     $variant === 'ghost'
       ? `color: ${theme.colors.gray[700]};
          background: transparent;
-         &:hover { background: ${theme.colors.gray[100]}; }
+         &:hover { background: ${theme.colors.gray[100]}; color: ${theme.colors.gray[700]}; }
         `
       : `background: ${theme.colors.primary[600]};
          color: #ffffff;
-         &:hover { background: ${theme.colors.primary[700]}; }
+         &:hover { background: ${theme.colors.primary[700]}; color: #ffffff; }
         `};
 `;
 
