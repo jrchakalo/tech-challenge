@@ -101,6 +101,8 @@ export const updatePostSchema = Joi.object({
   excerpt: Joi.string().max(500).optional(),
   imageUrl: Joi.string().uri().optional(),
   tags: Joi.array().items(Joi.string().max(50)).max(10).optional(),
+}).min(1).messages({
+  'object.min': 'Informe ao menos um campo para atualização do post',
 });
 
 // Comment validation schemas
@@ -108,6 +110,18 @@ export const createCommentSchema = Joi.object({
   content: Joi.string().min(1).max(5000).required(),
   postId: Joi.number().integer().positive().required(),
   parentId: Joi.number().integer().positive().optional(),
+});
+
+export const updateCommentSchema = Joi.object({
+  content: Joi.string().min(1).max(5000).required(),
+});
+
+export const updateProfileSchema = Joi.object({
+  firstName: Joi.string().max(100).optional(),
+  lastName: Joi.string().max(100).optional(),
+  avatar: Joi.string().uri().optional(),
+}).min(1).messages({
+  'object.min': 'Escolha pelo menos um campo para atualizar seu perfil',
 });
 
 export const idParamSchema = Joi.object({
