@@ -156,3 +156,10 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 * Adicionei validações de `id` e `postId` nas rotas de posts e comentários, bloqueando acessos com parâmetros inválidos antes de chegar na camada de negócio.
 * Criei schemas dedicados para atualização de comentários e de perfil, garantindo que somente campos permitidos sejam aceitos e que haja ao menos um dado para atualizar.
 * Reforcei o schema de `updatePost` para impedir requisições vazias, mantendo o fluxo previsível na API.
+
+---
+
+## 9. CORS Restritivo
+
+* Centralizei a configuração de CORS em `config/cors.ts`, validando a lista de origens permitidas a partir de `CORS_ALLOWED_ORIGINS` e descartando URLs malformadas com um aviso.
+* Atualizei o Express para usar essa configuração compartilhada, liberando apenas métodos, cabeçalhos e origens necessários para o frontend.
