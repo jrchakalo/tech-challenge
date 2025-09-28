@@ -147,3 +147,12 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 * Reescrevi o `getPosts` para carregar autores, comentários e contagens em uma única consulta via `findAll` com `include` e agregações `COUNT`, eliminando os laços que disparavam queries adicionais por post.
 * Ajustei `getPostById` para carregar comentários e seus autores em eager loading, mantendo as contagens de likes em SQL e serializando a resposta em um único payload.
 * Removi o helper `Post.getCommentsWithAuthors`, que permanecia como exemplo quebrado.
+
+---
+
+## 8. Validação de Inputs com Joi
+
+* Expandi o middleware de validação para aceitar corpo, params e query com saneamento automático, evitando retrabalho manual em controllers.
+* Adicionei validações de `id` e `postId` nas rotas de posts e comentários, bloqueando acessos com parâmetros inválidos antes de chegar na camada de negócio.
+* Criei schemas dedicados para atualização de comentários e de perfil, garantindo que somente campos permitidos sejam aceitos e que haja ao menos um dado para atualizar.
+* Reforcei o schema de `updatePost` para impedir requisições vazias, mantendo o fluxo previsível na API.
