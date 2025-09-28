@@ -193,6 +193,13 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 * Migrei as credenciais sensíveis (senha do banco e segredos JWT) para Docker secrets com arquivos de exemplo em `secrets/`, incluindo suporte a variáveis `*_FILE` no backend.
 * Ampliei a documentação de ambiente (`.env.example`) e ignorei os arquivos reais de segredo para evitar commits acidentais.
 
+## 14. Moderação Avançada e Atualizações em Tempo Real
+
+* Criei `src/realtime/socket.ts` inicializando um `Server` do Socket.IO sobre o mesmo `httpServer` do Express, reaproveitando o `allowedOrigins` de `config/cors.ts` para preservar a política restritiva em websockets.
+* O middleware de conexão extrai o token JWT do `handshake` (em `auth.token`, `authorization` ou `query.token`), valida com `verifyToken` e consulta o usuário no banco. Conexões de usuários inativos ou com token inválido são recusadas com erro `AUTHENTICATION_ERROR`.
+* Cada socket autenticado recebe no `socket.data.user` informações mínimas (id, username, role) e um evento inicial `realtime:connected` para confirmação do vínculo.
+* Adicionei `src/tests/realtime.test.ts` garantindo que `initSocket` se comporte como singleton e feche corretamente após execução.
+
 ## Possíveis Melhorias
 
 * Separar compose de desenvolvimento e produção caso seja necessário um fluxo com volumes montados em modo live reload.

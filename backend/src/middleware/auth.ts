@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthenticatedRequest } from '../types';
+import { AuthenticatedRequest, UserRole } from '../types';
 import { User } from '../models';
 import { verifyToken } from '../utils/jwt';
 
@@ -17,7 +17,7 @@ export const authenticateToken = async (
   }
 
   try {
-  const decoded = verifyToken(token);
+    const decoded = verifyToken(token);
     
     // Verify user still exists
     const user = await User.findByPk(decoded.id);
@@ -30,6 +30,7 @@ export const authenticateToken = async (
       id: decoded.id,
       email: decoded.email,
       username: decoded.username,
+      role: user.role,
     };
     
     next();
@@ -53,7 +54,7 @@ export const optionalAuth = async (
   }
 
   try {
-  const decoded = verifyToken(token);
+    const decoded = verifyToken(token);
     
     const user = await User.findByPk(decoded.id);
     if (user && user.isActive) {
@@ -61,6 +62,7 @@ export const optionalAuth = async (
         id: decoded.id,
         email: decoded.email,
         username: decoded.username,
+        role: user.role,
       };
     }
   } catch (error) {
@@ -68,4 +70,24 @@ export const optionalAuth = async (
   }
 
   next();
+};
+
+const normalizeRoleArray = (roles: UserRole[]): UserRole[] => [...new Set(roles)];
+
+export const authorizeRoles = (...roles: UserRole[]) => {
+  const allowedRoles = normalizeRoleArray(roles);
+
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({ error: 'User not authenticated' });
+      return;
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      res.status(403).json({ error: 'Insufficient permissions' });
+      return;
+    }
+
+    next();
+  };
 };

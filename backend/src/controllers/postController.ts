@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import { Post, User, Comment, Like } from '../models';
 import { AuthenticatedRequest, CreatePostRequest, UpdatePostRequest, PostQuery } from '../types';
 import { sequelize } from '../config/database';
+import { getIO } from '../realtime/socket';
 
 export const getPosts = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
@@ -213,6 +214,13 @@ export const createPost = async (req: AuthenticatedRequest, res: Response): Prom
       ],
     });
 
+    const io = getIO();
+    if (io && createdPost) {
+      io.emit('post:created', {
+        post: createdPost.toJSON(),
+      });
+    }
+
     res.status(201).json({
       message: 'Post created successfully',
       post: createdPost,
@@ -263,6 +271,13 @@ export const updatePost = async (req: AuthenticatedRequest, res: Response): Prom
       ],
     });
 
+    const io = getIO();
+    if (io && updatedPost) {
+      io.emit('post:updated', {
+        post: updatedPost.toJSON(),
+      });
+    }
+
     res.status(200).json({
       message: 'Post updated successfully',
       post: updatedPost,
@@ -295,6 +310,13 @@ export const deletePost = async (req: AuthenticatedRequest, res: Response): Prom
     }
 
     await post.destroy();
+
+    const io = getIO();
+    if (io) {
+      io.emit('post:deleted', {
+        postId: post.id,
+      });
+    }
 
     res.status(200).json({
       message: 'Post deleted successfully',
@@ -330,6 +352,15 @@ export const likePost = async (req: AuthenticatedRequest, res: Response): Promis
     } else {
       await Like.create({ postId: post.id, userId: req.user.id });
       res.status(200).json({ message: 'Post liked', liked: true });
+    }
+
+    const io = getIO();
+    if (io) {
+      io.emit('post:likeToggled', {
+        postId: post.id,
+        liked: !existingLike,
+        userId: req.user.id,
+      });
     }
   } catch (error) {
     console.error('Like post error:', error);

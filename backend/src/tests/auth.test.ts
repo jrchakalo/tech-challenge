@@ -69,6 +69,7 @@ describe('Auth Controller', () => {
         id: 1,
         email: 'test@example.com',
         username: 'testuser',
+        role: 'user' as const,
       };
       const token = generateToken(payload);
       expect(token).toBeDefined();
@@ -85,6 +86,7 @@ describe('Auth Controller', () => {
         id: 1,
         email: 'test@example.com',
         username: 'testuser',
+        role: 'user' as const,
       };
 
       const token = generateToken(payload);
@@ -150,6 +152,7 @@ describe('Auth Controller', () => {
             id: user.id,
             email: user.email,
             username: user.username,
+            role: 'user',
           };
           next();
         },
@@ -185,6 +188,7 @@ describe('Auth Controller', () => {
             id: user.id,
             email: user.email,
             username: user.username,
+            role: 'user',
           };
           next();
         },

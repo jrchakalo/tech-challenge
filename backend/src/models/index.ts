@@ -15,6 +15,16 @@ User.hasMany(Comment, {
   as: 'comments',
 });
 
+User.hasMany(Comment, {
+  foreignKey: 'moderatedBy',
+  as: 'moderatedComments',
+});
+
+User.hasMany(Comment, {
+  foreignKey: 'flaggedBy',
+  as: 'flaggedComments',
+});
+
 User.hasMany(Like, {
   foreignKey: 'userId',
   as: 'likes',
@@ -55,6 +65,16 @@ Comment.belongsTo(Comment, {
 Comment.hasMany(Comment, {
   foreignKey: 'parentId',
   as: 'replies',
+});
+
+Comment.belongsTo(User, {
+  foreignKey: 'moderatedBy',
+  as: 'moderator',
+});
+
+Comment.belongsTo(User, {
+  foreignKey: 'flaggedBy',
+  as: 'flaggedByUser',
 });
 
 // Like associations

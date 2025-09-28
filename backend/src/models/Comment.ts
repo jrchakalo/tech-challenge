@@ -14,12 +14,17 @@ interface CommentAttributes {
   postId: number;
   authorId: number;
   parentId?: number;
-  isApproved: boolean;
+  status: 'pending' | 'approved' | 'rejected' | 'flagged';
+  moderatedBy?: number | null;
+  moderatedAt?: Date | null;
+  moderationNotes?: string | null;
+  flaggedBy?: number | null;
+  flaggedAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-interface CommentCreationAttributes extends Optional<CommentAttributes, 'id' | 'isApproved' | 'createdAt' | 'updatedAt'> {}
+interface CommentCreationAttributes extends Optional<CommentAttributes, 'id' | 'status' | 'moderatedBy' | 'moderatedAt' | 'moderationNotes' | 'flaggedBy' | 'flaggedAt' | 'createdAt' | 'updatedAt'> {}
 
 class Comment extends Model<CommentAttributes, CommentCreationAttributes> implements CommentAttributes {
   public id!: number;
@@ -27,7 +32,12 @@ class Comment extends Model<CommentAttributes, CommentCreationAttributes> implem
   public postId!: number;
   public authorId!: number;
   public parentId?: number;
-  public isApproved!: boolean;
+  public status!: 'pending' | 'approved' | 'rejected' | 'flagged';
+  public moderatedBy?: number | null;
+  public moderatedAt?: Date | null;
+  public moderationNotes?: string | null;
+  public flaggedBy?: number | null;
+  public flaggedAt?: Date | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -86,10 +96,40 @@ Comment.init(
       },
       onDelete: 'CASCADE',
     },
-    isApproved: {
-      type: DataTypes.BOOLEAN,
+    status: {
+      type: DataTypes.ENUM('pending', 'approved', 'rejected', 'flagged'),
       allowNull: false,
-      defaultValue: true,
+      defaultValue: 'pending',
+    },
+    moderatedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
+      onDelete: 'SET NULL',
+    },
+    moderatedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    moderationNotes: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    flaggedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
+      onDelete: 'SET NULL',
+    },
+    flaggedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
   },
   {
