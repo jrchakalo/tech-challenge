@@ -6,7 +6,7 @@ Este levantamento servirá como um roteiro para as correções e implementaçõe
 
 ## 1. Diagnóstico por Componente
 
-### 1.1. Infraestrutura e Ambiente (DevOps)
+### 1.1. Infraestrutura e Ambiente
 
 #### 1.1.1. Execução via Docker
 * A execução do comando `docker compose up -d` apresenta problemas. Em ambiente atual, há alto risco de falha tanto no backend quanto no frontend durante o build/execução em containers.
@@ -139,3 +139,10 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 ## 6. Correções de Testes Frontend
 
 * Ajustei `test-utils.tsx` para permitir rotas controladas, filtrei a prop `hasError` nos inputs estilizados e reescrevi `App.test.tsx` validando a tela de login real e o link de cadastro.
+
+---
+
+## 7. Performance no Feed de Posts
+
+* Reescrevi o `getPosts` para carregar autores, comentários e contagens em uma única consulta via `findAll` com `include` e agregações `COUNT`, eliminando os laços que disparavam queries adicionais por post.
+* Ajustei `getPostById` para carregar comentários e seus autores em eager loading, mantendo as contagens de likes em SQL e serializando a resposta em um único payload.

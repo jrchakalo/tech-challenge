@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { Op } from 'sequelize';
 import { Post, User, Comment, Like } from '../models';
 import { AuthenticatedRequest, CreatePostRequest, UpdatePostRequest, PostQuery } from '../types';
+import { sequelize } from '../config/database';
 
 export const getPosts = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
@@ -15,8 +16,8 @@ export const getPosts = async (req: AuthenticatedRequest, res: Response): Promis
       authorId,
     }: PostQuery = req.query;
 
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
+  const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+  const limitNumber = Math.max(parseInt(limit, 10) || 10, 1);
     const offset = (pageNumber - 1) * limitNumber;
 
     const whereClause: any = {
@@ -41,47 +42,82 @@ export const getPosts = async (req: AuthenticatedRequest, res: Response): Promis
       whereClause.authorId = parseInt(authorId);
     }
 
-    // Intentional N+1 query problem: This will cause performance issues
-    const posts = await Post.findAndCountAll({
+    const totalItems = await Post.count({ where: whereClause });
+
+    const posts = await Post.findAll({
       where: whereClause,
       limit: limitNumber,
       offset,
       order: [[sortBy, sortOrder]],
+      subQuery: false,
+      attributes: {
+        include: [
+          [
+            sequelize.literal('COUNT(DISTINCT("comments"."id"))'),
+            'commentCount',
+          ],
+          [
+            sequelize.literal('COUNT(DISTINCT("likes"."id"))'),
+            'likeCount',
+          ],
+        ],
+      },
       include: [
         {
           model: User,
           as: 'author',
           attributes: ['id', 'username', 'avatar'],
         },
-        // Missing eager loading for comments and likes - will cause N+1 queries
+        {
+          model: Comment,
+          as: 'comments',
+          attributes: [],
+          required: false,
+        },
+        {
+          model: Like,
+          as: 'likes',
+          attributes: [],
+          required: false,
+        },
       ],
+      group: ['Post.id', 'author.id'],
     });
 
-    // Intentionally inefficient: Making separate queries for each post
-    const postsWithCounts = await Promise.all(
-      posts.rows.map(async (post) => {
-        const commentCount = await Comment.count({ where: { postId: post.id } });
-        const likeCount = await Like.count({ where: { postId: post.id } });
-        const isLiked = req.user 
-          ? await Like.findOne({ where: { postId: post.id, userId: req.user.id } }) !== null
-          : false;
+    const postIds = posts.map((post) => post.id);
 
-        return {
-          ...post.toJSON(),
-          commentCount,
-          likeCount,
-          isLiked,
-        };
-      })
-    );
+    let likedPostIds = new Set<number>();
+    if (req.user && postIds.length > 0) {
+      const userLikes = await Like.findAll({
+        attributes: ['postId'],
+        where: {
+          userId: req.user.id,
+          postId: postIds,
+        },
+      });
+
+      likedPostIds = new Set(userLikes.map((like) => like.postId));
+    }
+
+    const postsWithCounts = posts.map((post) => {
+      const postJson = post.toJSON() as any;
+
+      postJson.commentCount = Number(post.get('commentCount') ?? 0);
+      postJson.likeCount = Number(post.get('likeCount') ?? 0);
+      postJson.isLiked = req.user ? likedPostIds.has(post.id) : false;
+
+      return postJson;
+    });
+
+    const totalPages = totalItems > 0 ? Math.ceil(totalItems / limitNumber) : 0;
 
     res.status(200).json({
       posts: postsWithCounts,
       pagination: {
         currentPage: pageNumber,
-        totalPages: Math.ceil(posts.count / limitNumber),
-        totalItems: posts.count,
-        hasNextPage: pageNumber < Math.ceil(posts.count / limitNumber),
+        totalPages,
+        totalItems,
+        hasNextPage: pageNumber < totalPages,
         hasPrevPage: pageNumber > 1,
       },
     });
@@ -114,18 +150,29 @@ export const getPostById = async (req: AuthenticatedRequest, res: Response): Pro
     post.viewCount += 1;
     await post.save();
 
-    // Intentional N+1 query problem: Get comments with authors inefficiently
-    const commentsWithAuthors = await post.getCommentsWithAuthors();
+    const commentsWithAuthors = await Comment.findAll({
+      where: { postId: post.id },
+      include: [
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'username', 'avatar'],
+        },
+      ],
+      order: [['createdAt', 'ASC']],
+    });
     
     const likeCount = await Like.count({ where: { postId: post.id } });
     const isLiked = req.user 
       ? await Like.findOne({ where: { postId: post.id, userId: req.user.id } }) !== null
       : false;
 
+    const serializedComments = commentsWithAuthors.map((comment) => comment.toJSON());
+
     res.status(200).json({
       post: {
         ...post.toJSON(),
-        comments: commentsWithAuthors,
+        comments: serializedComments,
         likeCount,
         isLiked,
       },
