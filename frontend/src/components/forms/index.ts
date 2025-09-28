@@ -56,6 +56,12 @@ export const Input = styled.input.withConfig({
     box-shadow: 0 0 0 3px ${({ theme, hasError }) => 
       hasError ? `${theme.colors.red[500]}20` : `${theme.colors.primary[500]}20`};
   }
+
+  &:hover {
+    border-color: ${({ theme, hasError }) => 
+      hasError ? theme.colors.red[500] : theme.colors.primary[600]};
+    background-color: ${({ theme }) => theme.colors.gray[50]};
+  }
   
   &::placeholder {
     color: ${({ theme }) => theme.colors.gray[400]};
@@ -82,6 +88,12 @@ export const TextArea = styled.textarea.withConfig({
     box-shadow: 0 0 0 3px ${({ theme, hasError }) => 
       hasError ? `${theme.colors.red[500]}20` : `${theme.colors.primary[500]}20`};
   }
+
+  &:hover {
+    border-color: ${({ theme, hasError }) => 
+      hasError ? theme.colors.red[500] : theme.colors.primary[600]};
+    background-color: ${({ theme }) => theme.colors.gray[50]};
+  }
   
   &::placeholder {
     color: ${({ theme }) => theme.colors.gray[400]};
@@ -106,6 +118,12 @@ export const Select = styled.select.withConfig({
       hasError ? theme.colors.red[500] : theme.colors.primary[500]};
     box-shadow: 0 0 0 3px ${({ theme, hasError }) => 
       hasError ? `${theme.colors.red[500]}20` : `${theme.colors.primary[500]}20`};
+  }
+
+  &:hover {
+    border-color: ${({ theme, hasError }) => 
+      hasError ? theme.colors.red[500] : theme.colors.primary[600]};
+    background-color: ${({ theme }) => theme.colors.gray[50]};
   }
 `;
 
@@ -154,6 +172,11 @@ export const FileInput = styled.input.attrs({ type: 'file' })`
   &:focus-visible {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary[500]};
+    background-color: ${({ theme }) => theme.colors.primary[50]};
+  }
+
+  &:hover {
+  border-color: ${({ theme }) => theme.colors.primary[600]};
     background-color: ${({ theme }) => theme.colors.primary[50]};
   }
 

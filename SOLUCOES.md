@@ -168,7 +168,7 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 
 ## 10. Revisar e Corrigir Responsividade da Aplicação
 
-* Ajustei utilidades globais (`.desktop-only`, `.sr-only`, scrollbar) para evitar vazamentos de layout, manter acessibilidade e suavizar a experiência em telas menores.
+* Ajustei utilidades globais para evitar vazamentos de layout, manter acessibilidade e suavizar a experiência em telas menores.
 * Atualizei o `FileInput` com leitura clara do arquivo, foco visível e botão adaptável em mobile, removendo animações custosas.
 * Reorganizei o cabeçalho com menu colapsável, garantindo navegação plena em dispositivos móveis e retomando o layout horizontal em desktops.
 
@@ -178,3 +178,10 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 
 * Adicionei banners de status reutilizáveis e um spinner leve para dar retorno imediato sobre envio, sucesso ou falha.
 * Ajustei o formulário de login para expor mensagens de erro locais, estados focados acessíveis e feedback claro durante o carregamento.
+
+---
+
+## 12. Hover States em Elementos Interativos
+
+* Refinei `Input`, `TextArea`, `Select` e `FileInput` para mudar bordas e fundo ao passar o mouse, reforçando a sensação de campos clicáveis.
+* Mantive suporte aos estados de erro, garantindo que o hover respeite o destaque em vermelho quando necessário.
