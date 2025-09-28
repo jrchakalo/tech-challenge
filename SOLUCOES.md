@@ -146,3 +146,4 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 
 * Reescrevi o `getPosts` para carregar autores, comentários e contagens em uma única consulta via `findAll` com `include` e agregações `COUNT`, eliminando os laços que disparavam queries adicionais por post.
 * Ajustei `getPostById` para carregar comentários e seus autores em eager loading, mantendo as contagens de likes em SQL e serializando a resposta em um único payload.
+* Removi o helper `Post.getCommentsWithAuthors`, que permanecia como exemplo quebrado.
