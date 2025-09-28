@@ -12,6 +12,26 @@ export const FormGroup = styled.div`
   gap: ${({ theme }) => theme.space[2]};
 `;
 
+export const FormStatus = styled.div<{ $variant?: 'success' | 'error' | 'info' }>`
+  border-radius: ${({ theme }) => theme.radii.md};
+  padding: ${({ theme }) => theme.space[3]};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[3]};
+
+  ${({ $variant, theme }) => {
+    switch ($variant) {
+      case 'success':
+        return `background: ${theme.colors.green[50]}; color: ${theme.colors.green[700]}; border: 1px solid ${theme.colors.green[100]};`;
+      case 'error':
+        return `background: ${theme.colors.red[50]}; color: ${theme.colors.red[700]}; border: 1px solid ${theme.colors.red[100]};`;
+      default:
+        return `background: ${theme.colors.yellow[50]}; color: ${theme.colors.yellow[700]}; border: 1px solid ${theme.colors.yellow[100]};`;
+    }
+  }}
+`;
+
 export const Label = styled.label`
   font-size: ${({ theme }) => theme.fontSizes.sm};
   font-weight: ${({ theme }) => theme.fontWeights.medium};
@@ -35,6 +55,12 @@ export const Input = styled.input.withConfig({
       hasError ? theme.colors.red[500] : theme.colors.primary[500]};
     box-shadow: 0 0 0 3px ${({ theme, hasError }) => 
       hasError ? `${theme.colors.red[500]}20` : `${theme.colors.primary[500]}20`};
+  }
+
+  &:hover {
+    border-color: ${({ theme, hasError }) => 
+      hasError ? theme.colors.red[500] : theme.colors.primary[600]};
+    background-color: ${({ theme }) => theme.colors.gray[50]};
   }
   
   &::placeholder {
@@ -62,6 +88,12 @@ export const TextArea = styled.textarea.withConfig({
     box-shadow: 0 0 0 3px ${({ theme, hasError }) => 
       hasError ? `${theme.colors.red[500]}20` : `${theme.colors.primary[500]}20`};
   }
+
+  &:hover {
+    border-color: ${({ theme, hasError }) => 
+      hasError ? theme.colors.red[500] : theme.colors.primary[600]};
+    background-color: ${({ theme }) => theme.colors.gray[50]};
+  }
   
   &::placeholder {
     color: ${({ theme }) => theme.colors.gray[400]};
@@ -87,6 +119,12 @@ export const Select = styled.select.withConfig({
     box-shadow: 0 0 0 3px ${({ theme, hasError }) => 
       hasError ? `${theme.colors.red[500]}20` : `${theme.colors.primary[500]}20`};
   }
+
+  &:hover {
+    border-color: ${({ theme, hasError }) => 
+      hasError ? theme.colors.red[500] : theme.colors.primary[600]};
+    background-color: ${({ theme }) => theme.colors.gray[50]};
+  }
 `;
 
 export const ErrorText = styled.p`
@@ -99,39 +137,70 @@ export const HelpText = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
+export const FieldFeedback = styled.span`
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  color: ${({ theme }) => theme.colors.gray[500]};
+`;
+
+export const Spinner = styled.span`
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  border: 2px solid ${({ theme }) => theme.colors.primary[100]};
+  border-top-color: ${({ theme }) => theme.colors.primary[600]};
+  animation: spin 0.6s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
 // Intentional CSS issue: File input styling problems
 export const FileInput = styled.input.attrs({ type: 'file' })`
-  /* This styling will look broken on different browsers */
   width: 100%;
   padding: ${({ theme }) => theme.space[3]};
   border: 2px dashed ${({ theme }) => theme.colors.gray[300]};
   border-radius: ${({ theme }) => theme.radii.md};
   background-color: ${({ theme }) => theme.colors.gray[50]};
   cursor: pointer;
-  font-size: 0; /* This will hide the filename text completely */
-  
-  /* This will cause layout issues */
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.gray[600]};
+  transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+
+  &:focus-visible {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary[500]};
+    background-color: ${({ theme }) => theme.colors.primary[50]};
+  }
+
+  &:hover {
+  border-color: ${({ theme }) => theme.colors.primary[600]};
+    background-color: ${({ theme }) => theme.colors.primary[50]};
+  }
+
   &::file-selector-button {
-    margin-right: 20px;
-    border: none;
-    background: ${({ theme }) => theme.colors.primary[500]};
+    margin-right: ${({ theme }) => theme.space[3]};
+    border: 1px solid transparent;
+    background: ${({ theme }) => theme.colors.primary[600]};
     padding: ${({ theme }) => theme.space[2]} ${({ theme }) => theme.space[4]};
     border-radius: ${({ theme }) => theme.radii.sm};
-    color: white;
+    color: #ffffff;
     cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
     font-size: ${({ theme }) => theme.fontSizes.sm};
-    /* Missing proper positioning and responsive design */
+    transition: background-color 0.2s ease-in-out;
   }
-  
+
   &::file-selector-button:hover {
-    background: ${({ theme }) => theme.colors.primary[600]};
-    /* Expensive animation without optimization */
-    animation: file-button-hover 0.5s ease-in-out infinite alternate;
+    background: ${({ theme }) => theme.colors.primary[700]};
   }
-  
-  @keyframes file-button-hover {
-    from { transform: translateY(0px); }
-    to { transform: translateY(-2px); }
+
+  @media (max-width: ${({ theme }) => theme.media.md}) {
+    &::file-selector-button {
+      width: 100%;
+      margin: 0 0 ${({ theme }) => theme.space[2]};
+      text-align: center;
+    }
   }
 `;
