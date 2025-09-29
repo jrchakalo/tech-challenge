@@ -9,6 +9,7 @@ import { Layout } from './components/layout/Layout';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { HomePage } from './pages/posts/HomePage';
+import { CommentModerationPage } from './pages/moderation/CommentModerationPage';
 // import { CreatePostPage } from './pages/posts/CreatePostPage';
 // import { PostDetailPage } from './pages/posts/PostDetailPage';
 
@@ -18,16 +19,27 @@ const PostDetailPage = () => <div>Post Detail Page - Coming Soon</div>;
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  allowedRoles?: Array<'user' | 'moderator' | 'admin'>;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
+  const { isAuthenticated, isLoading, user } = useAuth();
   
   if (isLoading) {
     return <div>Loading...</div>;
   }
   
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && allowedRoles.length > 0) {
+    if (!user || !allowedRoles.includes(user.role)) {
+      return <Navigate to="/" replace />;
+    }
+  }
+
+  return <>{children}</>;
 };
 
 const PublicRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
@@ -72,6 +84,15 @@ const AppRoutes: React.FC = () => {
               <CreatePostPage />
             </ProtectedRoute>
           } 
+        />
+
+        <Route 
+          path="/moderation/comments"
+          element={
+            <ProtectedRoute allowedRoles={['moderator', 'admin']}>
+              <CommentModerationPage />
+            </ProtectedRoute>
+          }
         />
         
         <Route path="*" element={<Navigate to="/" />} />

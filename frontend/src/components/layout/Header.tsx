@@ -167,6 +167,7 @@ const ActionButton = styled.button<{ $variant?: 'solid' | 'ghost' }>`
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
+  const canModerate = user?.role === 'moderator' || user?.role === 'admin';
 
   const handleLogout = () => {
     logout();
@@ -204,6 +205,11 @@ export const Header: React.FC = () => {
               <NavLink to="/create" onClick={() => setIsMenuOpen(false)}>
                 Write
               </NavLink>
+              {canModerate && (
+                <NavLink to="/moderation/comments" onClick={() => setIsMenuOpen(false)}>
+                  Moderação
+                </NavLink>
+              )}
               <UserMenu>
                 <UserButton>
                   <Avatar>{user?.username?.charAt(0)?.toUpperCase() || 'U'}</Avatar>

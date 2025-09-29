@@ -1,7 +1,7 @@
 import { useState, useContext, createContext, ReactNode, useEffect } from 'react';
 import { User } from '../types';
 import { authService } from '../services/authService';
-import { setAuthToken, removeAuthToken, getUserData, setUserData } from '../services/api';
+import { setAuthToken, removeAuthToken, getUserData, setUserData, getAuthToken } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -22,9 +22,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const userData = getUserData();
-        if (userData) {
-          setUser(userData);
+        const storedUser = getUserData();
+        if (storedUser?.role) {
+          setUser(storedUser);
+          return;
+        }
+
+        const token = getAuthToken();
+        if (token) {
+          const profile = await authService.getProfile();
+          setUserData(profile.user);
+          setUser(profile.user);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);

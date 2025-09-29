@@ -215,6 +215,13 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 * Criei `services/realtime.ts` encapsulando o cliente `socket.io-client` com reaproveitamento de token JWT e helpers de inscrição, permitindo assinar eventos do backend sem reinventar a roda em cada componente.
 * Configurei o feed para reagir imediatamente a eventos `post:*` e `comment:*`, atualizando listas e contadores sem recarregar a página e mantendo os valores locais em sincronia com sanitização simples.
 
+## 17. Painel de Moderação com feedback visual
+
+* Ampliei o modelo tipado de `User` e `Comment` no frontend para incluir papéis e metadados de moderação, alinhando o contrato com os responses do backend.
+* Adicionei chamadas dedicadas no `commentService` (`getModerationQueue`, `approveComment`, `rejectComment`, `flagComment`) com montagem inteligente de query string para filtros por status.
+* Criei `CommentModerationPage.tsx` exibindo fila paginada de comentários com atalhos de aprovação/rejeição, notas opcionais e atualizações instantâneas via Socket.IO.
+* Atualizei o `Header` e o roteamento protegido (`ProtectedRoute`) para mostrar o painel apenas para moderadores e administradores, mantendo feedback visual amigável e redirecionamentos seguros.
+
 ## Possíveis Melhorias
 
 * Separar compose de desenvolvimento e produção caso seja necessário um fluxo com volumes montados em modo live reload.
