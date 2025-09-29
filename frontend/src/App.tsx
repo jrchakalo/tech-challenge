@@ -7,13 +7,12 @@ import { GlobalStyle } from './styles/GlobalStyle';
 import { useAuth } from './hooks/useAuth';
 import { Layout } from './components/layout/Layout';
 import { LoginPage } from './pages/auth/LoginPage';
-// import { RegisterPage } from './pages/auth/RegisterPage';
+import { RegisterPage } from './pages/auth/RegisterPage';
 // import { HomePage } from './pages/posts/HomePage';
 // import { CreatePostPage } from './pages/posts/CreatePostPage';
 // import { PostDetailPage } from './pages/posts/PostDetailPage';
 
-// Simple placeholder components for now
-const RegisterPage = () => <div>Register Page - Coming Soon</div>;
+// Simple placeholder components para rotas ainda não implementadas
 const HomePage = () => <div>Home Page - Coming Soon</div>;
 const CreatePostPage = () => <div>Create Post Page - Coming Soon</div>;
 const PostDetailPage = () => <div>Post Detail Page - Coming Soon</div>;
