@@ -5,6 +5,7 @@ export interface User {
   firstName?: string;
   lastName?: string;
   avatar?: string;
+  role: 'user' | 'moderator' | 'admin';
   isActive: boolean;
   lastLogin?: string;
   createdAt: string;
@@ -37,10 +38,18 @@ export interface Comment {
   postId: number;
   authorId: number;
   parentId?: number;
-  isApproved: boolean;
+  status: 'pending' | 'approved' | 'rejected' | 'flagged';
+  moderatedBy?: number | null;
+  moderatedAt?: string | null;
+  moderationNotes?: string | null;
+  flaggedBy?: number | null;
+  flaggedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   author?: User;
+  moderator?: Pick<User, 'id' | 'username'> | null;
+  flaggedByUser?: Pick<User, 'id' | 'username'> | null;
+  post?: Pick<Post, 'id' | 'title'>;
   replies?: Comment[];
 }
 

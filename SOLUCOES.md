@@ -195,10 +195,38 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 
 ## 14. Moderação Avançada e Atualizações em Tempo Real
 
+* Foram criados novos endpoints na API, protegidos por papéis de usuário, para permitir a sinalização flag, aprovação e rejeição de comentários.
+* Adicionada uma rota segura (`/moderation/queue`) para que moderadores possam visualizar e agir sobre o conteúdo pendente.
+* A lógica de listagem de comentários foi atualizada para filtrar o conteúdo com base no status de moderação, garantindo que apenas conteúdo aprovado seja visível para usuários comuns.
 * Criei `src/realtime/socket.ts` inicializando um `Server` do Socket.IO sobre o mesmo `httpServer` do Express, reaproveitando o `allowedOrigins` de `config/cors.ts` para preservar a política restritiva em websockets.
 * O middleware de conexão extrai o token JWT do `handshake` (em `auth.token`, `authorization` ou `query.token`), valida com `verifyToken` e consulta o usuário no banco. Conexões de usuários inativos ou com token inválido são recusadas com erro `AUTHENTICATION_ERROR`.
 * Cada socket autenticado recebe no `socket.data.user` informações mínimas (id, username, role) e um evento inicial `realtime:connected` para confirmação do vínculo.
 * Adicionei `src/tests/realtime.test.ts` garantindo que `initSocket` se comporte como singleton e feche corretamente após execução.
+
+## 15. Página de Registro Funcional no Frontend
+
+* Criei `RegisterPage.tsx` reaproveitando a base visual da tela de login e trazendo campos opcionais de nome/sobrenome, validações com `react-hook-form` e confirmação de senha com mensagens acolhedoras para orientar o usuário.
+* Integrei o envio com `useAuth.register`, exibindo feedback visual, toasts de sucesso/erro e redirecionamento automático após resposta do backend, garantindo autenticação imediata após o cadastro.
+* Atualizei `App.tsx` para usar a nova página no lugar do placeholder antigo e executei `npm test -- --runInBand` no frontend para assegurar que os fluxos existentes permanecem estáveis.
+
+## 16. Home de Posts com Feed em Tempo Real
+
+* Substituí o placeholder da rota raiz por `HomePage.tsx`, montando cards de post com autor, tags, contadores e botão de curtida que conversa com o `postService` e respeita o estado autenticado do usuário.
+* Criei `services/realtime.ts` encapsulando o cliente `socket.io-client` com reaproveitamento de token JWT e helpers de inscrição, permitindo assinar eventos do backend sem reinventar a roda em cada componente.
+* Configurei o feed para reagir imediatamente a eventos `post:*` e `comment:*`, atualizando listas e contadores sem recarregar a página e mantendo os valores locais em sincronia com sanitização simples.
+
+## 17. Painel de Moderação com feedback visual
+
+* Ampliei o modelo tipado de `User` e `Comment` no frontend para incluir papéis e metadados de moderação, alinhando o contrato com os responses do backend.
+* Adicionei chamadas dedicadas no `commentService` (`getModerationQueue`, `approveComment`, `rejectComment`, `flagComment`) com montagem inteligente de query string para filtros por status.
+* Criei `CommentModerationPage.tsx` exibindo fila paginada de comentários com atalhos de aprovação/rejeição, notas opcionais e atualizações instantâneas via Socket.IO.
+* Atualizei o `Header` e o roteamento protegido (`ProtectedRoute`) para mostrar o painel apenas para moderadores e administradores, mantendo feedback visual amigável e redirecionamentos seguros.
+
+## 18. Cobertura de Testes das Rotas Críticas
+
+* Adicionei `CommentModerationPage.test.tsx` garantindo que o acesso à rota de moderação exige papéis adequados e que a experiência de redirecionamento preserva o feed para leitores comuns.
+* Mockei serviços de comentários e realtime para isolar os testes e validar apenas as integrações de roteamento e estado sem chamadas externas.
+* Ajustei o cenário de moderação para confirmar que a fila inicial é consultada com filtros padrão, prevenindo regressões na proteção do dashboard.
 
 ## Possíveis Melhorias
 
