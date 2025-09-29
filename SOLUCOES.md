@@ -209,6 +209,12 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 * Integrei o envio com `useAuth.register`, exibindo feedback visual, toasts de sucesso/erro e redirecionamento automático após resposta do backend, garantindo autenticação imediata após o cadastro.
 * Atualizei `App.tsx` para usar a nova página no lugar do placeholder antigo e executei `npm test -- --runInBand` no frontend para assegurar que os fluxos existentes permanecem estáveis.
 
+## 16. Home de Posts com Feed em Tempo Real
+
+* Substituí o placeholder da rota raiz por `HomePage.tsx`, montando cards de post com autor, tags, contadores e botão de curtida que conversa com o `postService` e respeita o estado autenticado do usuário.
+* Criei `services/realtime.ts` encapsulando o cliente `socket.io-client` com reaproveitamento de token JWT e helpers de inscrição, permitindo assinar eventos do backend sem reinventar a roda em cada componente.
+* Configurei o feed para reagir imediatamente a eventos `post:*` e `comment:*`, atualizando listas e contadores sem recarregar a página e mantendo os valores locais em sincronia com sanitização simples.
+
 ## Possíveis Melhorias
 
 * Separar compose de desenvolvimento e produção caso seja necessário um fluxo com volumes montados em modo live reload.
