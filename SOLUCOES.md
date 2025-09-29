@@ -222,6 +222,12 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 * Criei `CommentModerationPage.tsx` exibindo fila paginada de comentários com atalhos de aprovação/rejeição, notas opcionais e atualizações instantâneas via Socket.IO.
 * Atualizei o `Header` e o roteamento protegido (`ProtectedRoute`) para mostrar o painel apenas para moderadores e administradores, mantendo feedback visual amigável e redirecionamentos seguros.
 
+## 18. Cobertura de Testes das Rotas Críticas
+
+* Adicionei `CommentModerationPage.test.tsx` garantindo que o acesso à rota de moderação exige papéis adequados e que a experiência de redirecionamento preserva o feed para leitores comuns.
+* Mockei serviços de comentários e realtime para isolar os testes e validar apenas as integrações de roteamento e estado sem chamadas externas.
+* Ajustei o cenário de moderação para confirmar que a fila inicial é consultada com filtros padrão, prevenindo regressões na proteção do dashboard.
+
 ## Possíveis Melhorias
 
 * Separar compose de desenvolvimento e produção caso seja necessário um fluxo com volumes montados em modo live reload.
