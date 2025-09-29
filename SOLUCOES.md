@@ -90,6 +90,31 @@ Com base no diagnóstico, a seguinte lista de tarefas foi criada e priorizada pa
 
 ---
 
+# Sumário das Entregas
+
+Abaixo estão listadas as 18 principais entregas realizadas para resolver os problemas identificados, com foco em estabilidade, segurança, performance e experiência do usuário. Os detalhes de cada uma estão na seção "Correções Executadas".
+
+1.  Estabilização do Ambiente Frontend
+2.  Configurações do Docker
+3.  Hashing e fluxo de alteração de senha
+4.  Fortalecimento da segurança do JWT
+5.  Correções de Testes Backend
+6.  Correções de Testes Frontend
+7.  Performance no Feed de Posts
+8.  Validação de Inputs com Joi
+9.  CORS Restritivo
+10. Revisão da Responsividade e Acessibilidade
+11. Feedback Visual em Formulários
+12. Hover States em Elementos Interativos
+13. Endurecimento dos Contêineres e Segredos do Docker
+14. Moderação Avançada e Atualizações em Tempo Real
+15. Página de Registro Funcional no Frontend
+16. Home de Posts com Feed em Tempo Real
+17. Painel de Moderação com Feedback Visual
+18. Cobertura de Testes das Rotas Críticas
+
+---
+
 # Correções Executadas
 
 ## 1. Estabilização do Ambiente Frontend
@@ -233,3 +258,7 @@ Esta seção detalha as correções referentes à otimização do ambiente Docke
 * Separar compose de desenvolvimento e produção caso seja necessário um fluxo com volumes montados em modo live reload.
 * Otimizar ainda mais `getPostById` adotando agregações e includes, alinhando a consulta às melhorias descritas no `docs/EAGER_LOADING.md`.
 * Disponibilizar uma estratégia alternativa de upload via Presigned URL conforme o guia `docs/S3_UPLOAD_STRATEGIES.md`.
+* Construir as páginas completas de criação e detalhamento de posts, com formulário, pré-visualização e integração ao fluxo de upload já disponível na API.
+* Expor a experiência de comentários no frontend (listagem, respostas, sinalização e feedback ao autor), reaproveitando os endpoints existentes e refletindo status em tempo real para usuários finais.
+* Incluir um healthcheck HTTP no serviço do frontend dentro do `docker-compose.yml`, seguindo as recomendações do `docs/DOCKER_SETUP.md`.
+* Fornecer um `docker-compose.dev.yml` dedicado para desenvolvimento, com volumes e hot reload, conforme o roteiro sugerido na documentação de Docker.
